@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation - EventScraper Hub</title>
+    <meta name="description" content="Automate venue scraping with n8n integration on EventScraper Hub.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Additional styles for automation page */
+        .automation-card {
+            background: var(--surface-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 1024px) {
+            .automation-card {
+                flex-direction: row;
+            }
+        }
+
+        .automation-visual {
+            flex: 0 0 40%;
+            min-height: 300px;
+            background: #15151A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .automation-visual::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 120%, rgba(34, 211, 238, 0.15), transparent 70%);
+        }
+
+        .integration-flow {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .integration-node {
+            position: relative;
+        }
+
+        .integration-node .node-box {
+            width: 80px;
+            height: 80px;
+            background: #2a2b36;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .integration-node .node-label {
+            position: absolute;
+            bottom: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .connection-line {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .connection-line .line {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(to right, #34A853, #EA4B71);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connection-line .line::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.5);
+            animation: shimmer 1.5s infinite;
+            transform: translateX(-100%);
+        }
+
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .automation-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #4ADE80;
+        }
+
+        .status-badge .pulse {
+            width: 8px;
+            height: 8px;
+            background: #22C55E;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .config-box {
+            background: rgba(18, 18, 18, 0.5);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-xl);
+            padding: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .config-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-grey);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .config-item span {
+            font-size: 0.875rem;
+            color: white;
+        }
+
+        .scrape-btn {
+            position: relative;
+            overflow: hidden;
+            background: var(--secondary);
+            color: #0f1016;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scrape-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(34, 211, 238, 0.3);
+        }
+
+        .scrape-btn::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: conic-gradient(from 90deg at 50% 50%, #E2E8F0 0%, #22D3EE 50%, #E2E8F0 100%);
+            animation: spin 4s linear infinite;
+            z-index: -1;
+            border-radius: inherit;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .last-run {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-grey);
+            margin-top: 1rem;
+        }
+
+        .last-run strong {
+            color: var(--secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="brand-icon" style="background: linear-gradient(135deg, var(--primary), #8B5CF6);">
+                    <span class="material-symbols-outlined" style="color: white;">hub</span>
+                </div>
+                <div>
+                    <h1 style="font-size: 1.125rem; font-weight: 700; color: white; line-height: 1.2;">EventScraper</h1>
+                    <p style="font-size: 0.75rem; color: var(--text-grey);">Hub Admin</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/index.html" class="sidebar-link">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="/favorites.html" class="sidebar-link">
+                <span class="material-symbols-outlined">favorite</span>
+                My Favorites
+            </a>
+            <a href="/automation.html" class="sidebar-link active">
+                <span class="material-symbols-outlined">smart_toy</span>
+                Automation
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="flex items-center gap-3" id="sidebarUser">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-with-sidebar" style="min-height: 100vh; overflow-y: auto;">
+        <!-- Header -->
+        <header
+            style="padding: 1.5rem 2rem; position: sticky; top: 0; z-index: 20; background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-dark);">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 1.5rem;">
+                <a href="/index.html" style="color: var(--text-grey);">Admin</a>
+                <span style="color: var(--text-grey);">/</span>
+                <span style="color: white; font-weight: 500;">Automation</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 style="font-size: 1.875rem; margin-bottom: 0.5rem;">Automation Control Center</h1>
+                    <p style="color: var(--text-grey);">Manage background jobs, integrations, and data scraping
+                        workflows.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="btn btn-ghost">
+                        <span class="material-symbols-outlined">history</span>
+                        View Logs
+                    </button>
+                    <button class="btn btn-ghost">
+                        <span class="material-symbols-outlined">settings</span>
+                        Configure
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div style="padding: 2rem; max-width: 1200px;">
+            <!-- Main Automation Card -->
+            <div class="automation-card">
+                <!-- Visual Side -->
+                <div class="automation-visual">
+                    <div class="integration-flow">
+                        <!-- Google Maps Node -->
+                        <div class="integration-node">
+                            <div class="node-box">
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 40px; color: #34A853;">map</span>
+                            </div>
+                            <div class="node-label">Google Maps</div>
+                        </div>
+
+                        <!-- Connection -->
+                        <div class="connection-line">
+                            <div class="line"></div>
+                            <span class="material-symbols-outlined"
+                                style="font-size: 14px; color: var(--secondary); animation: pulse 2s infinite;">check_circle</span>
+                        </div>
+
+                        <!-- n8n Node -->
+                        <div class="integration-node">
+                            <div class="node-box">
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 40px; color: #EA4B71;">webhook</span>
+                            </div>
+                            <div class="node-label">n8n Workflow</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Side -->
+                <div class="automation-content">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Venue Data Automation</h2>
+                            <p style="color: var(--text-grey);">Automatically scrape, validate, and import new venue
+                                data from Google Maps directly into your dashboard via n8n webhooks.</p>
+                        </div>
+                        <div class="status-badge">
+                            <span class="pulse"></span>
+                            Active
+                        </div>
+                    </div>
+
+                    <div class="config-box">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined"
+                                style="font-size: 18px; color: var(--text-grey);">tune</span>
+                            <span style="font-size: 0.875rem; font-weight: 600; color: white;">Configuration</span>
+                        </div>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label>Target City</label>
+                                <input type="text" id="scrapingCity" class="form-input" value="Marrakech"
+                                    style="margin-top: 0.25rem;">
+                            </div>
+                            <div class="config-item">
+                                <label>Search Keyword</label>
+                                <input type="text" id="scrapingKeyword" class="form-input" value="event venues"
+                                    style="margin-top: 0.25rem;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <button class="scrape-btn" id="triggerScrapingBtn" onclick="triggerScraping()">
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-outlined">bolt</span>
+                                Trigger n8n Google Maps Scraper
+                            </span>
+                        </button>
+                        <div class="last-run" id="lastRunInfo">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">schedule</span>
+                            <span>Last Run: Never</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Execution Logs -->
+            <div style="margin-top: 2rem;">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 style="font-size: 1.125rem; font-weight: 700;">Recent Execution Logs</h3>
+                    <a href="#" style="font-size: 0.875rem; color: var(--primary);">View all history</a>
+                </div>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Job ID</th>
+                                <th>Trigger</th>
+                                <th>City</th>
+                                <th>Keyword</th>
+                                <th style="text-align: right;">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-grey);">
+                                    No scraping jobs yet. Trigger your first scraping above.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/automation.js"></script>
+</body>
+
+</html>

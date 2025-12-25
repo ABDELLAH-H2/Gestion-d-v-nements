@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventScraper Hub - Discover Amazing Events</title>
+    <meta name="description" content="Discover and manage events with EventScraper Hub. Find conferences, concerts, workshops, and meetups near you.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <!-- Brand -->
+            <a href="/" class="brand">
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined">hub</span>
+                </div>
+                <span class="brand-name">EventScraper Hub</span>
+            </a>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search events, locations, or tags...">
+                <span class="material-symbols-outlined search-icon">search</span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="nav-links">
+                <a href="/" class="nav-link active">Events</a>
+                <a href="/favorites.html" class="nav-link">My Favorites</a>
+                <a href="/automation.html" class="nav-link">Automation</a>
+            </nav>
+
+            <div class="nav-divider"></div>
+
+            <!-- User Menu -->
+            <div class="user-menu">
+                <!-- Populated by JS based on auth state -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container py-8">
+        <!-- Page Header & Filters -->
+        <div class="flex flex-col gap-6 mb-8">
+            <div class="flex items-center justify-between">
+                <!-- Filter Chips -->
+                <div class="filter-chips" id="filterChips">
+                    <button class="chip active" data-type="">All Events</button>
+                    <button class="chip" data-type="conference">Conferences</button>
+                    <button class="chip" data-type="concert">Concerts</button>
+                    <button class="chip" data-type="workshop">Workshops</button>
+                    <button class="chip" data-type="meetup">Meetups</button>
+                </div>
+
+                <!-- Additional Filters -->
+                <div class="flex gap-3">
+                    <select id="statusFilter" class="form-select" style="width: auto;">
+                        <option value="">All Status</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+
+                    <button class="btn btn-primary" onclick="openCreateEventModal()" id="createEventBtn" style="display: none;">
+                        <span class="material-symbols-outlined">add</span>
+                        Create Event
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="eventsGrid">
+            <!-- Events loaded by JS -->
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state hidden" id="loadingState">
+            <div class="flex justify-center py-12">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state hidden" id="emptyState">
+            <div class="empty-state-icon">
+                <span class="material-symbols-outlined">event_busy</span>
+            </div>
+            <h3 class="empty-state-title">No events found</h3>
+            <p class="empty-state-text">Try adjusting your filters or search terms to find events.</p>
+        </div>
+
+        <!-- Load More -->
+        <div class="flex justify-center mt-12" id="loadMoreContainer">
+            <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreEvents()">
+                <span class="material-symbols-outlined">refresh</span>
+                Load More Events
+            </button>
+        </div>
+    </main>
+
+    <!-- Create/Edit Event Modal -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Create New Event</h3>
+                <button class="modal-close" onclick="closeEventModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="eventForm" onsubmit="handleEventSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="eventId">
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="eventName">Event Name *</label>
+                        <input type="text" id="eventName" class="form-input" placeholder="Enter event name" required>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label" for="eventType">Type *</label>
+                            <select id="eventType" class="form-select" required>
+                                <option value="">Select type</option>
+                                <option value="conference">Conference</option>
+                                <option value="concert">Concert</option>
+                                <option value="workshop">Workshop</option>
+                                <option value="meetup">Meetup</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="eventStatus">Status</label>
+                            <select id="eventStatus" class="form-select">
+                                <option value="upcoming">Upcoming</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="eventDescription">Description</label>
+                        <textarea id="eventDescription" class="form-textarea" placeholder="Describe your event..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label" for="eventDate">Start Date *</label>
+                            <input type="date" id="eventDate" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="eventEndDate">End Date</label>
+                            <input type="date" id="eventEndDate" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="eventLocation">Location *</label>
+                        <input type="text" id="eventLocation" class="form-input" placeholder="City, State" required>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label" for="eventCapacity">Capacity</label>
+                            <input type="number" id="eventCapacity" class="form-input" placeholder="100" min="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="eventPrice">Price ($)</label>
+                            <input type="number" id="eventPrice" class="form-input" placeholder="0" min="0" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="eventImage">Image URL</label>
+                        <input type="url" id="eventImage" class="form-input" placeholder="https://example.com/image.jpg">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeEventModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitEventBtn">Create Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Delete Event</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-grey">Are you sure you want to delete this event? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/events.js"></script>
+</body>
+</html>

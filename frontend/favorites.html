@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Saved Events - EventScraper Hub</title>
+    <meta name="description" content="Manage your favorite events on EventScraper Hub.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <!-- Brand -->
+            <a href="/" class="brand">
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined">hub</span>
+                </div>
+                <span class="brand-name">EventScraper Hub</span>
+            </a>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search your favorites...">
+                <span class="material-symbols-outlined search-icon">search</span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="nav-links">
+                <a href="/" class="nav-link">Events</a>
+                <a href="/favorites.html" class="nav-link active">My Favorites</a>
+                <a href="/automation.html" class="nav-link">Automation</a>
+            </nav>
+
+            <div class="nav-divider"></div>
+
+            <!-- User Menu -->
+            <div class="user-menu">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container py-8">
+        <!-- Page Header -->
+        <div class="flex flex-col gap-2 mb-8">
+            <h1>My Saved Events</h1>
+            <p id="favoriteCount">Manage your curated list of events.</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex items-center gap-3 mb-8">
+            <button class="btn btn-ghost" id="filterBtn">
+                <span class="material-symbols-outlined">filter_list</span>
+                Filter
+            </button>
+            <select id="sortSelect" class="form-select" style="width: auto;">
+                <option value="favorited_at">Sort by Date Added</option>
+                <option value="date">Sort by Event Date</option>
+                <option value="name">Sort by Name</option>
+            </select>
+        </div>
+
+        <!-- Favorites Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="favoritesGrid">
+            <!-- Favorites loaded by JS -->
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state hidden" id="loadingState">
+            <div class="flex justify-center py-12">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state hidden" id="emptyState">
+            <div class="empty-state-icon">
+                <span class="material-symbols-outlined">bookmark_border</span>
+            </div>
+            <h3 class="empty-state-title">No saved events yet</h3>
+            <p class="empty-state-text">Browse the events page to find conferences and meetups to add to your list.</p>
+            <a href="/index.html" class="btn btn-primary">Browse Events</a>
+        </div>
+
+        <!-- Load More -->
+        <div class="flex justify-center mt-12 hidden" id="loadMoreContainer">
+            <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreFavorites()">
+                <span class="material-symbols-outlined">refresh</span>
+                Load More
+            </button>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/favorites.js"></script>
+</body>
+
+</html>
