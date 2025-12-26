@@ -50,9 +50,15 @@ const triggerScraping = async (req, res) => {
         });
     } catch (error) {
         console.error('Trigger scraping error:', error);
+        
+        // Return n8n error message if available
+        const message = error.message.includes('n8n') 
+            ? error.message 
+            : 'Failed to trigger scraping workflow. Please check the system logs.';
+
         res.status(500).json({
             success: false,
-            message: 'Failed to trigger scraping workflow. Please try again later.'
+            message
         });
     }
 };
