@@ -230,7 +230,7 @@ const toggleFavorite = async (eventId, button) => {
 
 // View event details
 const viewEventDetails = (eventId) => {
-    window.location.href = `/event-detail.html?id=${eventId}`;
+    window.location.href = `event-detail.html?id=${eventId}`;
 };
 
 // Open create event modal

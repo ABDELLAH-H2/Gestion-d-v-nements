@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details - EventScraper Hub</title>
+    <meta name="description" content="View event details on EventScraper Hub.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Event Detail Page Specific Styles */
+        .hero-image {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        @media (min-width: 768px) {
+            .hero-image {
+                height: 420px;
+            }
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.2) 50%, transparent);
+        }
+
+        .hero-badges {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .hero-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.75rem;
+            font-weight: 700;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-badge.featured {
+            background: rgba(99, 102, 241, 0.9);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-badge.status-upcoming {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ADE80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .hero-badge.status-completed {
+            background: rgba(107, 114, 128, 0.2);
+            color: #9CA3AF;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+
+        .hero-badge.status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #F87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-grey);
+            margin-bottom: 1.5rem;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary);
+        }
+
+        .breadcrumb .current {
+            color: var(--text-white);
+            font-weight: 500;
+        }
+
+        .event-title {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .event-title {
+                font-size: 3rem;
+            }
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .meta-icon {
+            padding: 0.5rem;
+            background: var(--surface-dark);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            color: var(--secondary);
+        }
+
+        .meta-label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            color: var(--text-grey);
+            opacity: 0.8;
+        }
+
+        .meta-value {
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+        }
+
+        .event-description {
+            color: var(--text-grey);
+            line-height: 1.75;
+        }
+
+        .event-description p {
+            margin-bottom: 1rem;
+        }
+
+        .event-description ul {
+            list-style: disc;
+            padding-left: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .event-description li {
+            margin-bottom: 0.5rem;
+        }
+
+        .event-description li::marker {
+            color: var(--primary);
+        }
+
+        /* Speakers Grid */
+        .speakers-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 640px) {
+            .speakers-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .speaker-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--surface-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-xl);
+            transition: all var(--transition-base);
+            cursor: pointer;
+        }
+
+        .speaker-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .speaker-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid transparent;
+            transition: border-color var(--transition-fast);
+        }
+
+        .speaker-card:hover .speaker-avatar {
+            border-color: var(--primary);
+        }
+
+        .speaker-name {
+            font-weight: 700;
+            font-size: 1.125rem;
+            transition: color var(--transition-fast);
+        }
+
+        .speaker-card:hover .speaker-name {
+            color: var(--primary);
+        }
+
+        .speaker-role {
+            font-size: 0.875rem;
+            color: var(--text-grey);
+        }
+
+        /* Sidebar */
+        .sidebar-card {
+            padding: 1.5rem;
+            background: var(--surface-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-2xl);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .price-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .price-label {
+            font-size: 0.875rem;
+            color: var(--text-grey);
+            margin-bottom: 0.25rem;
+        }
+
+        .price-value {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .price-suffix {
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: var(--text-grey);
+        }
+
+        .capacity-bar {
+            margin-bottom: 1.5rem;
+        }
+
+        .capacity-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-grey);
+            margin-bottom: 0.5rem;
+        }
+
+        .capacity-highlight {
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            font-size: 1.125rem;
+            border: none;
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+            transition: all var(--transition-base);
+            margin-bottom: 0.75rem;
+        }
+
+        .register-btn:hover {
+            background: #5457E5;
+            transform: translateY(-2px);
+        }
+
+        .favorite-btn-large {
+            width: 100%;
+            padding: 0.875rem;
+            background: transparent;
+            color: var(--text-white);
+            font-weight: 600;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all var(--transition-base);
+        }
+
+        .favorite-btn-large:hover {
+            background: var(--surface-light);
+        }
+
+        .favorite-btn-large .heart {
+            color: #EF4444;
+        }
+
+        /* Organizer Card */
+        .organizer-card {
+            padding: 1.25rem;
+            background: var(--surface-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-2xl);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .organizer-avatar {
+            width: 48px;
+            height: 48px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .organizer-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            color: var(--text-grey);
+        }
+
+        .organizer-name {
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .organizer-contact {
+            margin-left: auto;
+            color: var(--secondary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .organizer-contact:hover {
+            color: var(--text-white);
+        }
+
+        /* Layout */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .detail-grid {
+                grid-template-columns: 2fr 1fr;
+                gap: 3rem;
+            }
+        }
+
+        .sidebar-sticky {
+            position: sticky;
+            top: 6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .content-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border-dark);
+            margin: 2.5rem 0;
+        }
+
+        /* Loading State */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 1rem;
+        }
+
+        /* Error State */
+        .error-container {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="brand">
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined">hub</span>
+                </div>
+                <span class="brand-name">EventScraper Hub</span>
+            </a>
+
+            <div class="search-bar">
+                <input type="text" placeholder="Search events...">
+                <span class="material-symbols-outlined search-icon">search</span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link active">Events</a>
+                <a href="favorites.html" class="nav-link">My Favorites</a>
+                <a href="automation.html" class="nav-link">Automation</a>
+            </nav>
+
+            <div class="nav-divider"></div>
+
+            <div class="user-menu"></div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container py-8" style="max-width: 1200px;">
+        <!-- Loading State -->
+        <div class="loading-container" id="loadingState">
+            <div class="spinner"></div>
+            <p class="text-grey">Loading event details...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-container hidden" id="errorState">
+            <span class="material-symbols-outlined error-icon">error</span>
+            <h2>Event Not Found</h2>
+            <p class="text-grey mb-6">The event you're looking for doesn't exist or has been removed.</p>
+            <a href="index.html" class="btn btn-primary">Back to Events</a>
+        </div>
+
+        <!-- Event Content (hidden until loaded) -->
+        <div id="eventContent" class="hidden">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Events</a>
+                <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+                <span class="current" id="breadcrumbTitle"></span>
+            </nav>
+
+            <!-- Hero Image -->
+            <div class="hero-image" id="heroImage">
+                <img src="" alt="" id="heroImg" onerror="this.style.display='none'">
+                <div class="hero-overlay"></div>
+                <div class="hero-badges">
+                    <span class="hero-badge featured" id="typeBadge">Conference</span>
+                    <span class="hero-badge status-upcoming" id="statusBadge">Upcoming</span>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="detail-grid">
+                <!-- Main Content -->
+                <div class="content-main">
+                    <div class="content-section">
+                        <h1 class="event-title" id="eventTitle"></h1>
+
+                        <div class="event-meta">
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <span class="material-symbols-outlined">calendar_today</span>
+                                </div>
+                                <div>
+                                    <span class="meta-label">Date</span>
+                                    <span class="meta-value" id="eventDate"></span>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <span class="material-symbols-outlined">location_on</span>
+                                </div>
+                                <div>
+                                    <span class="meta-label">Location</span>
+                                    <span class="meta-value" id="eventLocation"></span>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <div class="meta-icon">
+                                    <span class="material-symbols-outlined">group</span>
+                                </div>
+                                <div>
+                                    <span class="meta-label">Capacity</span>
+                                    <span class="meta-value" id="eventCapacity"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="content-section">
+                        <h3 class="section-title">About Event</h3>
+                        <div class="event-description" id="eventDescription"></div>
+                    </div>
+
+                    <!-- Speakers Section (for conferences/workshops) -->
+                    <div class="content-section" id="speakersSection">
+                        <h3 class="section-title">Featured Speakers</h3>
+                        <div class="speakers-grid">
+                            <div class="speaker-card">
+                                <div class="speaker-avatar"
+                                    style="background-image: url('https://ui-avatars.com/api/?name=Sarah+Jenkins&background=6366F1&color=fff');">
+                                </div>
+                                <div>
+                                    <h4 class="speaker-name">Sarah Jenkins</h4>
+                                    <p class="speaker-role">VP of Engineering</p>
+                                </div>
+                            </div>
+                            <div class="speaker-card">
+                                <div class="speaker-avatar"
+                                    style="background-image: url('https://ui-avatars.com/api/?name=David+Chen&background=22D3EE&color=fff');">
+                                </div>
+                                <div>
+                                    <h4 class="speaker-name">David Chen</h4>
+                                    <p class="speaker-role">Lead AI Researcher</p>
+                                </div>
+                            </div>
+                            <div class="speaker-card">
+                                <div class="speaker-avatar"
+                                    style="background-image: url('https://ui-avatars.com/api/?name=Elena+Rodriguez&background=8B5CF6&color=fff');">
+                                </div>
+                                <div>
+                                    <h4 class="speaker-name">Elena Rodriguez</h4>
+                                    <p class="speaker-role">Product Design Lead</p>
+                                </div>
+                            </div>
+                            <div class="speaker-card">
+                                <div class="speaker-avatar"
+                                    style="background-image: url('https://ui-avatars.com/api/?name=Marcus+Johnson&background=EC4899&color=fff');">
+                                </div>
+                                <div>
+                                    <h4 class="speaker-name">Marcus Johnson</h4>
+                                    <p class="speaker-role">CTO, TechStart</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar-sticky">
+                    <!-- Pricing Card -->
+                    <div class="sidebar-card">
+                        <div class="price-section">
+                            <div>
+                                <span class="price-label">Total Price</span>
+                                <div class="price-value" id="eventPrice">$0</div>
+                            </div>
+                            <span class="material-symbols-outlined"
+                                style="font-size: 32px; color: #4ADE80;">confirmation_number</span>
+                        </div>
+
+                        <div class="capacity-bar">
+                            <div class="capacity-info">
+                                <span>Remaining Spots</span>
+                                <span class="capacity-highlight" id="spotsLeft">-</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="capacityBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <button class="register-btn" id="registerBtn">
+                            <span>Register Now</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+
+                        <button class="favorite-btn-large" id="favoriteBtn">
+                            <span class="material-symbols-outlined heart" id="favoriteIcon">favorite_border</span>
+                            <span id="favoriteText">Add to Favorites</span>
+                        </button>
+                    </div>
+
+                    <!-- Organizer Card -->
+                    <div class="organizer-card">
+                        <div class="organizer-avatar" id="organizerInitials">EH</div>
+                        <div>
+                            <p class="organizer-label">Organized by</p>
+                            <p class="organizer-name" id="organizerName">EventScraper Hub</p>
+                        </div>
+                        <button class="organizer-contact">
+                            <span class="material-symbols-outlined">mail</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script>
+        let currentEvent = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateNavigation();
+            loadEventDetails();
+
+            // Favorite button click
+            document.getElementById('favoriteBtn').addEventListener('click', toggleFavorite);
+        });
+
+        // Get event ID from URL
+        const getEventId = () => {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        };
+
+        // Load event details
+        const loadEventDetails = async () => {
+            const eventId = getEventId();
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const eventContent = document.getElementById('eventContent');
+
+            if (!eventId) {
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                console.log('Fetching event ID:', eventId);
+                const response = await api.getEvent(eventId);
+                console.log('API Response:', response);
+
+                if (response.success && response.data) {
+                    currentEvent = response.data;
+                    renderEventDetails(currentEvent);
+
+                    loadingState.classList.add('hidden');
+                    eventContent.classList.remove('hidden');
+                } else {
+                    throw new Error('Event not found');
+                }
+            } catch (error) {
+                console.error('Error loading event:', error);
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+            }
+        };
+
+        // Render event details
+        const renderEventDetails = (event) => {
+            console.log('Rendering event:', event);
+
+            // Update page title
+            document.title = `${event.name} - EventScraper Hub`;
+
+            // Breadcrumb
+            document.getElementById('breadcrumbTitle').textContent = event.name;
+
+            // Hero image
+            const heroImg = document.getElementById('heroImg');
+            const placeholderImages = [
+                'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200',
+                'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200',
+                'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=1200',
+                'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200',
+                'https://images.unsplash.com/photo-1559223607-a43c990c692c?w=1200'
+            ];
+            const imageUrl = event.image || placeholderImages[event.id % placeholderImages.length];
+            heroImg.src = imageUrl;
+            heroImg.alt = event.name;
+            heroImg.style.display = 'block';
+
+            // Type badge
+            const typeBadge = document.getElementById('typeBadge');
+            typeBadge.textContent = event.type.charAt(0).toUpperCase() + event.type.slice(1);
+
+            // Status badge
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = event.status.charAt(0).toUpperCase() + event.status.slice(1);
+            statusBadge.className = `hero-badge status-${event.status}`;
+
+            // Title
+            document.getElementById('eventTitle').textContent = event.name;
+
+            // Date
+            const startDate = new Date(event.date);
+            let dateText = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            if (event.end_date) {
+                const endDate = new Date(event.end_date);
+                dateText = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            }
+            document.getElementById('eventDate').textContent = dateText;
+
+            // Location
+            document.getElementById('eventLocation').textContent = event.location;
+
+            // Capacity
+            document.getElementById('eventCapacity').textContent = `${event.capacity || 100} attendees`;
+
+            // Description
+            const descEl = document.getElementById('eventDescription');
+            if (event.description) {
+                descEl.innerHTML = `
+                    <p>${event.description}</p>
+                    <p>Join us for an unforgettable experience with industry leaders and innovators.</p>
+                    <ul>
+                        <li>Keynote speeches from industry experts</li>
+                        <li>Hands-on workshops and sessions</li>
+                        <li>Networking opportunities</li>
+                    </ul>
+                `;
+            } else {
+                descEl.innerHTML = `
+                    <p>Join us for this exciting ${event.type}!</p>
+                    <p>This event brings together professionals and enthusiasts for an immersive experience.</p>
+                `;
+            }
+
+            // Price
+            const priceEl = document.getElementById('eventPrice');
+            if (event.price && parseFloat(event.price) > 0) {
+                priceEl.innerHTML = `$${parseFloat(event.price).toFixed(0)}<span class="price-suffix">/person</span>`;
+            } else {
+                priceEl.innerHTML = `<span style="color: #4ADE80;">Free</span>`;
+            }
+
+            // Capacity bar
+            const capacity = event.capacity || 100;
+            const spotsUsed = Math.floor(Math.random() * capacity * 0.85);
+            const spotsLeft = capacity - spotsUsed;
+            const percentUsed = Math.floor((spotsUsed / capacity) * 100);
+
+            document.getElementById('spotsLeft').textContent = spotsLeft > 0 ? `Only ${spotsLeft} left` : 'Sold Out';
+            document.getElementById('capacityBar').style.width = `${percentUsed}%`;
+
+            // Favorite state
+            if (event.isFavorite) {
+                document.getElementById('favoriteIcon').textContent = 'favorite';
+                document.getElementById('favoriteText').textContent = 'Remove from Favorites';
+            }
+
+            // Organizer
+            const organizerName = event.creator_username || 'EventScraper Hub';
+            document.getElementById('organizerName').textContent = organizerName;
+            document.getElementById('organizerInitials').textContent = organizerName.substring(0, 2).toUpperCase();
+
+            // Hide speakers for meetups
+            if (event.type === 'meetup') {
+                document.getElementById('speakersSection').style.display = 'none';
+            }
+        };
+
+        // Toggle favorite
+        const toggleFavorite = async () => {
+            if (!isAuthenticated()) {
+                showToast('Please login to add favorites', 'warning');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!currentEvent) return;
+
+            const favoriteIcon = document.getElementById('favoriteIcon');
+            const favoriteText = document.getElementById('favoriteText');
+            const isFavorite = favoriteIcon.textContent === 'favorite';
+
+            try {
+                if (isFavorite) {
+                    await api.removeFavorite(currentEvent.id);
+                    favoriteIcon.textContent = 'favorite_border';
+                    favoriteText.textContent = 'Add to Favorites';
+                    showToast('Removed from favorites', 'success');
+                } else {
+                    await api.addFavorite(currentEvent.id);
+                    favoriteIcon.textContent = 'favorite';
+                    favoriteText.textContent = 'Remove from Favorites';
+                    showToast('Added to favorites', 'success');
+                }
+            } catch (error) {
+                showToast(error.message || 'Failed to update favorites', 'error');
+            }
+        };
+    </script>
+</body>
+
+</html>
