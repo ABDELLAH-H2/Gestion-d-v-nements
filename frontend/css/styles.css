@@ -1456,6 +1456,7 @@ a:hover {
 /* ===== Image Carousel (Auto-Scroll) ===== */
 .event-card-image.carousel {
     position: relative;
+    overflow: hidden;
 }
 
 .event-card-image.carousel .carousel-container {
