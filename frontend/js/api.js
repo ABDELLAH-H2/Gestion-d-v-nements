@@ -3,29 +3,20 @@ const API_BASE_URL = (window.location.hostname === 'localhost' || window.locatio
     ? 'http://localhost:3000/api'
     : '/api';
 
-// Get stored token
-const getToken = () => localStorage.getItem('token');
+// State management (in-memory)
+let currentUser = null;
 
-// Set token
-const setToken = (token) => localStorage.setItem('token', token);
+// Get current user (from memory)
+const getUser = () => currentUser;
 
-// Remove token
-const removeToken = () => localStorage.removeItem('token');
-
-// Get stored user
-const getUser = () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+// Set user (to memory)
+const setUser = (user) => {
+    currentUser = user;
+    updateNavigation();
 };
 
-// Set user
-const setUser = (user) => localStorage.setItem('user', JSON.stringify(user));
-
-// Remove user
-const removeUser = () => localStorage.removeItem('user');
-
 // Check if user is authenticated
-const isAuthenticated = () => !!getToken();
+const isAuthenticated = () => !!currentUser;
 
 // API Request helper
 const apiRequest = async (endpoint, options = {}) => {
@@ -35,13 +26,9 @@ const apiRequest = async (endpoint, options = {}) => {
         'Content-Type': 'application/json'
     };
 
-    const token = getToken();
-    if (token) {
-        defaultHeaders['Authorization'] = `Bearer ${token}`;
-    }
-
     const config = {
         ...options,
+        credentials: 'include', // Important: This sends cookies with the request
         headers: {
             ...defaultHeaders,
             ...options.headers
@@ -59,15 +46,11 @@ const apiRequest = async (endpoint, options = {}) => {
         if (!response.ok) {
             // Handle 401 Unauthorized
             if (response.status === 401) {
-                removeToken();
-                removeUser();
-                // Only redirect to login if not already on auth pages
-                if (!window.location.pathname.includes('login') &&
-                    !window.location.pathname.includes('register')) {
+                // Only reset user if we were previously logged in or trying to access protected route
+                if (currentUser && !window.location.pathname.includes('login')) {
+                    currentUser = null;
+                    updateNavigation();
                     showToast('Session expired. Please login again.', 'error');
-                    setTimeout(() => {
-                        window.location.href = '/login.html';
-                    }, 1500);
                 }
             }
             throw new Error(data.message || 'Request failed');
@@ -83,9 +66,45 @@ const apiRequest = async (endpoint, options = {}) => {
 // API Methods
 const api = {
     // Auth
-    register: (data) => apiRequest('/auth/register', { method: 'POST', body: data }),
-    login: (data) => apiRequest('/auth/login', { method: 'POST', body: data }),
-    getMe: () => apiRequest('/auth/me'),
+    register: async (data) => {
+        const response = await apiRequest('/auth/register', { method: 'POST', body: data });
+        if (response.success && response.user) {
+            setUser(response.user);
+        }
+        return response;
+    },
+    login: async (data) => {
+        const response = await apiRequest('/auth/login', { method: 'POST', body: data });
+        if (response.success && response.user) {
+            setUser(response.user);
+        }
+        return response;
+    },
+    logout: async () => {
+        try {
+            await apiRequest('/auth/logout', { method: 'POST' });
+        } finally {
+            currentUser = null;
+            updateNavigation();
+            showToast('Logged out successfully', 'success');
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 1000);
+        }
+    },
+    getMe: async () => {
+        try {
+            const response = await apiRequest('/auth/me');
+            if (response.success && response.user) {
+                setUser(response.user);
+            }
+            return response;
+        } catch (error) {
+            currentUser = null;
+            updateNavigation();
+            return null;
+        }
+    },
 
     // Events
     getEvents: (params = {}) => {
@@ -209,7 +228,7 @@ const updateNavigation = () => {
                 <div class="user-dropdown hidden" id="userDropdown">
                     <div class="dropdown-header">
                         <strong>${user.username}</strong>
-                        <span>${user.email}</span>
+                        <span>${user.email || ''}</span>
                     </div>
                     <a href="/favorites.html" class="dropdown-item">
                         <span class="material-symbols-outlined">favorite</span>
@@ -234,14 +253,9 @@ const updateNavigation = () => {
     });
 };
 
-// Logout function
+// Logout function - using api.logout instead
 const logout = () => {
-    removeToken();
-    removeUser();
-    showToast('Logged out successfully', 'success');
-    setTimeout(() => {
-        window.location.href = '/index.html';
-    }, 1000);
+    api.logout();
 };
 
 // Toggle user dropdown
@@ -261,14 +275,20 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Initialize app: Check for existing session
+document.addEventListener('DOMContentLoaded', () => {
+    // Only fetch user if we are NOT on login/register pages (to avoid double redirect loops or flashes)
+    if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html')) {
+        api.getMe();
+    }
+});
+
 // Export for use in other files
 window.api = api;
 window.showToast = showToast;
 window.isAuthenticated = isAuthenticated;
 window.getUser = getUser;
 window.setUser = setUser;
-window.setToken = setToken;
-window.getToken = getToken;
 window.logout = logout;
 window.updateNavigation = updateNavigation;
 window.formatDate = formatDate;

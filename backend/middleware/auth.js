@@ -3,17 +3,20 @@ const { pool } = require('../config/database');
 
 const authMiddleware = async (req, res, next) => {
     try {
-        // Get token from header
-        const authHeader = req.headers.authorization;
+        let token;
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+        } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
+
+        if (!token) {
             return res.status(401).json({
                 success: false,
                 message: 'Access denied. No token provided.'
             });
         }
-
-        const token = authHeader.split(' ')[1];
 
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -58,14 +61,19 @@ const authMiddleware = async (req, res, next) => {
 // Optional auth - doesn't fail if no token, but attaches user if present
 const optionalAuth = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
+        let token;
+        
+        if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+        } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        if (!token) {
             req.user = null;
             return next();
         }
 
-        const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         const { rows: users } = await pool.query(

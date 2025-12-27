@@ -48,11 +48,22 @@ const register = async (req, res) => {
             [result[0].id]
         );
 
+        // Set secure cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
-            token,
-            user: users[0]
+            user: {
+                id: users[0].id,
+                username: users[0].username,
+                avatar: users[0].avatar
+            }
         });
     } catch (error) {
         console.error('Register error:', error);
@@ -99,11 +110,22 @@ const login = async (req, res) => {
         // Remove password from response
         delete user.password;
 
+        // Set secure cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({
             success: true,
             message: 'Login successful',
-            token,
-            user
+            user: {
+                id: user.id,
+                username: user.username,
+                avatar: user.avatar
+            }
         });
     } catch (error) {
         console.error('Login error:', error);
@@ -112,6 +134,20 @@ const login = async (req, res) => {
             message: 'Server error during login'
         });
     }
+};
+
+// Logout user
+const logout = (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    });
+    
+    res.json({
+        success: true,
+        message: 'Logged out successfully'
+    });
 };
 
 // Get current user
@@ -130,4 +166,4 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getMe };
+module.exports = { register, login, logout, getMe };

@@ -1,0 +1,168 @@
+{
+  "name": "EventScraper Hub Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/scrape",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        192
+      ],
+      "id": "d757cd97-c435-4cf6-b133-8812a5eefeca",
+      "webhookId": "8ccb95fa-3fee-402c-9a8e-c00d15eaa436"
+    },
+    {
+      "parameters": {
+        "authentication": "queryAuth",
+        "url": "https://serpapi.com/search.json",
+        "options": {},
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "engine",
+              "value": "google_maps"
+            },
+            {
+              "name": "q",
+              "value": "= {{$node[\"Webhook\"].json[\"body\"][\"keyword\"]}} in {{$node[\"Webhook\"].json[\"body\"][\"city\"]}}"
+            },
+            {
+              "name": "type",
+              "value": "search"
+            }
+          ]
+        }
+      },
+      "name": "SerpAPI Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -64
+      ],
+      "id": "991411d2-dc46-4ef7-bb93-ca73cb676143",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "lljXEw88ESx2Vx3O",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "sheetId": "17r8ajS1rf37OUjl2meAkKmkqObcuf1q992G6Bn64DV8",
+        "range": "A:E",
+        "options": {}
+      },
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -64
+      ],
+      "id": "d2162636-fc7b-4a77-b85e-16c2905f495e",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gDj8LfhzfW7LR7UA",
+          "name": "Google Sheets account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Scraping completed\",\n  \"sheetUrl\": \"https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID\"\n}",
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        592,
+        192
+      ],
+      "id": "526ec2d7-d337-406b-bded-1cf90035a66b"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "local_results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -224
+      ],
+      "id": "c6059ab6-d35c-418c-8221-c0943c528690",
+      "name": "Split Out"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "SerpAPI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ed82ce05-ef7e-4526-80bd-53d1435fc6c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6fba02c56f732391825a81b0d3eb33212632413b406e8a0f3fe5b1cfa7369a99"
+  },
+  "id": "svkIrbqfU014RwOr",
+  "tags": []
+}

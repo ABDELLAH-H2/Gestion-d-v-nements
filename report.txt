@@ -1,0 +1,99 @@
+# Code Repair Report
+
+## Summary of Changes
+This report details the fixes applied to the codebase to address security vulnerabilities, configuration robustness, and error handling issues identified during the project scan.
+
+## 1. Security Fix: Database Configuration
+**File:** `backend/config/database.js`
+
+**Issue:** 
+The database configuration contained a hardcoded fallback for the password field (`password: process.env.DB_PASSWORD || ''`). This practice poses a security risk as it might allow unauthorized access if the environment variable is not set, or inadvertently expose default credentials in version control.
+
+**Fix:**
+Removed the fallback empty string. The application will now strictly rely on the `DB_PASSWORD` environment variable.
+
+**Code Change:**
+```javascript
+// Before
+password: process.env.DB_PASSWORD || '',
+
+// After
+password: process.env.DB_PASSWORD,
+```
+
+**Action Required:**
+Ensure your `.env` file in the `backend` directory has the `DB_PASSWORD` variable defined.
+
+## 2. Configuration Fix: Frontend API Base URL
+**File:** `frontend/js/api.js`
+
+**Issue:**
+The frontend was configured to use `localhost:3000` only when the hostname was explicitly `localhost`. This caused issues when accessing the frontend via `127.0.0.1`, leading to connection failures with the backend.
+
+**Fix:**
+Updated the hostname check to include `127.0.0.1`.
+
+**Code Change:**
+```javascript
+// Before
+const API_BASE_URL = window.location.hostname === 'localhost'
+
+// After
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+```
+
+## 3. Error Handling Fix: Scraping Controller
+**File:** `backend/controllers/scrapingController.js`
+
+**Issue:**
+The `triggerScraping` function had generic error handling. If the n8n workflow failed or returned an error, the frontend received a vague "Failed to trigger scraping workflow" message, making debugging difficult.
+
+**Fix:**
+Enhanced the error handling block to propagate specific error messages related to the n8n integration, providing better feedback to the client and logs for the developer.
+
+**Code Change:**
+```javascript
+// Improved error response
+const message = error.message.includes('n8n') 
+    ? error.message 
+    : 'Failed to trigger scraping workflow. Please check the system logs.';
+```
+
+## 4. Stability Fix: Database Queue Limit
+**File:** `backend/config/database.js`
+
+**Issue:**
+The database connection pool was configured with `queueLimit: 0`. This allows an infinite number of connection requests to queue up in memory if the database becomes unresponsive or slow. In a high-traffic scenario or during a database outage, this could lead to the application server crashing due to Out of Memory (OOM) errors (Denial of Service risk).
+
+**Fix:**
+Set `queueLimit` to `100`. This ensures that if the database is overwhelmed, the application will fail fast for new requests rather than crashing entirely, preserving the server process.
+
+**Code Change:**
+```javascript
+// Before
+queueLimit: 0
+
+// After
+queueLimit: 100
+```
+
+## 5. Security Fix: Critical Environment Variable Validation
+**File:** `backend/server.js`
+
+**Issue:**
+The application attempted to start even if the `JWT_SECRET` environment variable was missing. `JWT_SECRET` is crucial for signing and verifying authentication tokens. Without it (or if it defaults to undefined/empty), the security of the entire authentication system is compromised.
+
+**Fix:**
+Added a validation check at the server startup sequence. The application will now log a fatal error and exit immediately if `JWT_SECRET` is not defined, preventing it from running in an insecure state.
+
+**Code Change:**
+```javascript
+// Added at start of startServer()
+if (!process.env.JWT_SECRET) {
+    console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
+    process.exit(1);
+}
+```
+
+## Conclusion
+These changes improve the application's security posture, development experience flexibility, and operational visibility.

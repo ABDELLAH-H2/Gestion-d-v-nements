@@ -1,0 +1,343 @@
+================================================================================
+           EVENTSCRAPER HUB - DOCUMENTATION POUR DIAGRAMMES UML
+================================================================================
+
+Ce document explique la structure et les fonctionnalités du projet "EventScraper Hub"
+pour faciliter la création des diagrammes UML (Diagramme de Classes et Diagramme de Cas d'Utilisation).
+
+================================================================================
+                              1. DESCRIPTION DU PROJET
+================================================================================
+
+EventScraper Hub est un système de gestion d'événements full-stack avec des 
+capacités de scraping automatisé. Il permet aux utilisateurs de découvrir, 
+créer et gérer des événements comme des conférences, concerts, ateliers et meetups.
+
+================================================================================
+                       2. DIAGRAMME DE CLASSES (CLASS DIAGRAM)
+================================================================================
+
+Les classes principales du système sont:
+
+------------------------------------------------------------------------------
+CLASSE: User (Utilisateur)
+------------------------------------------------------------------------------
+Attributs:
+    - id: INT (PRIMARY KEY, AUTO_INCREMENT)
+    - username: VARCHAR(50) (NOT NULL, UNIQUE)
+    - email: VARCHAR(100) (NOT NULL, UNIQUE)
+    - password: VARCHAR(255) (NOT NULL)
+    - avatar: VARCHAR(500) (DEFAULT NULL)
+    - created_at: TIMESTAMP
+    - updated_at: TIMESTAMP
+
+Méthodes:
+    - register(): Créer un nouveau compte utilisateur
+    - login(): Se connecter avec email et mot de passe
+    - getProfile(): Obtenir les informations du profil
+    - generateToken(): Générer un token JWT
+
+Relations:
+    - Un User peut créer plusieurs Events (1..*)
+    - Un User peut avoir plusieurs Favorites (0..*)
+
+------------------------------------------------------------------------------
+CLASSE: Event (Événement)
+------------------------------------------------------------------------------
+Attributs:
+    - id: INT (PRIMARY KEY, AUTO_INCREMENT)
+    - name: VARCHAR(200) (NOT NULL)
+    - type: ENUM('conference', 'concert', 'workshop', 'meetup') (NOT NULL)
+    - description: TEXT
+    - date: DATE (NOT NULL)
+    - end_date: DATE (DEFAULT NULL)
+    - location: VARCHAR(200) (NOT NULL)
+    - capacity: INT (DEFAULT 100)
+    - price: DECIMAL(10, 2) (DEFAULT 0.00)
+    - status: ENUM('upcoming', 'completed', 'cancelled') (DEFAULT 'upcoming')
+    - image: LONGTEXT (DEFAULT NULL)
+    - creator_id: INT (NOT NULL, FOREIGN KEY -> User.id)
+    - created_at: TIMESTAMP
+    - updated_at: TIMESTAMP
+
+Méthodes:
+    - getAll(): Récupérer tous les événements avec pagination
+    - getById(): Récupérer un événement par son ID
+    - create(): Créer un nouvel événement
+    - update(): Mettre à jour un événement
+    - delete(): Supprimer un événement
+    - search(): Rechercher des événements par mot-clé
+    - filterByType(): Filtrer par type d'événement
+    - filterByStatus(): Filtrer par statut
+
+Relations:
+    - Appartient à un User (creator_id -> User.id)
+    - Peut être favori de plusieurs Users (via Favorite)
+
+------------------------------------------------------------------------------
+CLASSE: Favorite (Favori)
+------------------------------------------------------------------------------
+Attributs:
+    - id: INT (PRIMARY KEY, AUTO_INCREMENT)
+    - user_id: INT (NOT NULL, FOREIGN KEY -> User.id)
+    - event_id: INT (NOT NULL, FOREIGN KEY -> Event.id)
+    - created_at: TIMESTAMP
+
+Méthodes:
+    - addFavorite(): Ajouter un événement aux favoris
+    - removeFavorite(): Retirer un événement des favoris
+    - getMyFavorites(): Obtenir la liste des favoris d'un utilisateur
+
+Relations:
+    - Référence un User (user_id -> User.id)
+    - Référence un Event (event_id -> Event.id)
+    - Contrainte UNIQUE sur (user_id, event_id)
+
+------------------------------------------------------------------------------
+CLASSE: ScrapedVenue (Lieu scrapé)
+------------------------------------------------------------------------------
+Attributs:
+    - id: INT (PRIMARY KEY, AUTO_INCREMENT)
+    - name: VARCHAR(200) (NOT NULL)
+    - address: VARCHAR(300)
+    - phone: VARCHAR(50)
+    - rating: DECIMAL(2, 1)
+    - website: VARCHAR(300)
+    - city: VARCHAR(100)
+    - keyword: VARCHAR(100)
+    - scraped_at: TIMESTAMP
+
+Méthodes:
+    - triggerScraping(): Déclencher le scraping via n8n workflow
+    - exportToSheets(): Exporter les données vers Google Sheets
+
+Relations:
+    - Classe indépendante (données externes)
+
+================================================================================
+                           RELATIONS ENTRE CLASSES
+================================================================================
+
+1. User (1) ----creates----> (*) Event
+   - Un utilisateur peut créer plusieurs événements
+   - Un événement appartient à un seul créateur
+
+2. User (1) ----has----> (*) Favorite
+   - Un utilisateur peut avoir plusieurs favoris
+   - Chaque favori appartient à un seul utilisateur
+
+3. Event (1) ----is in----> (*) Favorite
+   - Un événement peut être dans les favoris de plusieurs utilisateurs
+   - Chaque favori référence un seul événement
+
+4. User (*) <-----> (*) Event (via Favorite - relation Many-to-Many)
+   - Relation d'association via la table pivot "favorites"
+
+================================================================================
+               3. DIAGRAMME DE CAS D'UTILISATION (USE CASE DIAGRAM)
+================================================================================
+
+------------------------------------------------------------------------------
+ACTEURS:
+------------------------------------------------------------------------------
+
+1. VISITEUR (Guest/Anonymous User)
+   - Utilisateur non authentifié
+   - Accès limité aux fonctionnalités
+
+2. UTILISATEUR AUTHENTIFIÉ (Authenticated User)
+   - Utilisateur connecté avec un compte
+   - Accès complet aux fonctionnalités
+
+3. SYSTÈME EXTERNE: n8n Workflow
+   - Service d'automatisation
+   - Exécute le scraping de données
+
+4. SYSTÈME EXTERNE: Google Maps API
+   - Source de données pour le scraping
+
+5. SYSTÈME EXTERNE: Google Sheets
+   - Destination pour l'export des données
+
+------------------------------------------------------------------------------
+CAS D'UTILISATION POUR LE VISITEUR:
+------------------------------------------------------------------------------
+
+UC1: Consulter les événements
+    - Description: Voir la liste des événements disponibles
+    - Précondition: Aucune
+    - Postcondition: Liste des événements affichée
+
+UC2: Rechercher un événement
+    - Description: Chercher des événements par mot-clé
+    - Précondition: Aucune
+    - Postcondition: Résultats de recherche affichés
+
+UC3: Filtrer les événements
+    - Description: Filtrer par type (conference, concert, workshop, meetup)
+    - Précondition: Aucune
+    - Postcondition: Événements filtrés affichés
+
+UC4: Voir les détails d'un événement
+    - Description: Consulter toutes les informations d'un événement
+    - Précondition: Événement existant
+    - Postcondition: Détails de l'événement affichés
+
+UC5: S'inscrire
+    - Description: Créer un nouveau compte utilisateur
+    - Précondition: Email et username non utilisés
+    - Postcondition: Compte créé, token JWT généré
+
+UC6: Se connecter
+    - Description: Authentification avec email et mot de passe
+    - Précondition: Compte existant
+    - Postcondition: Utilisateur connecté, token JWT généré
+
+------------------------------------------------------------------------------
+CAS D'UTILISATION POUR L'UTILISATEUR AUTHENTIFIÉ:
+------------------------------------------------------------------------------
+
+(Inclut tous les cas du Visiteur, plus:)
+
+UC7: Créer un événement
+    - Description: Créer un nouvel événement
+    - Précondition: Utilisateur connecté
+    - Postcondition: Événement créé avec creator_id = user.id
+
+UC8: Modifier un événement
+    - Description: Mettre à jour les informations d'un événement
+    - Précondition: Utilisateur connecté ET propriétaire de l'événement
+    - Postcondition: Événement mis à jour
+
+UC9: Supprimer un événement
+    - Description: Supprimer définitivement un événement
+    - Précondition: Utilisateur connecté ET propriétaire de l'événement
+    - Postcondition: Événement supprimé
+
+UC10: Ajouter aux favoris
+    - Description: Ajouter un événement à sa liste de favoris
+    - Précondition: Utilisateur connecté, événement existant, non déjà en favori
+    - Postcondition: Événement ajouté aux favoris
+
+UC11: Retirer des favoris
+    - Description: Retirer un événement de sa liste de favoris
+    - Précondition: Utilisateur connecté, événement en favori
+    - Postcondition: Événement retiré des favoris
+
+UC12: Consulter mes favoris
+    - Description: Voir la liste de ses événements favoris
+    - Précondition: Utilisateur connecté
+    - Postcondition: Liste des favoris affichée
+
+UC13: Consulter mon profil
+    - Description: Voir les informations de son compte
+    - Précondition: Utilisateur connecté
+    - Postcondition: Informations du profil affichées
+
+UC14: Déclencher le scraping
+    - Description: Lancer le workflow n8n pour scraper des lieux
+    - Précondition: Utilisateur connecté
+    - Postcondition: Workflow déclenché, données envoyées vers Google Sheets
+
+UC15: Se déconnecter
+    - Description: Terminer la session
+    - Précondition: Utilisateur connecté
+    - Postcondition: Session terminée, token invalidé côté client
+
+================================================================================
+                        HIÉRARCHIE DES CAS D'UTILISATION
+================================================================================
+
+• Gérer l'authentification
+    ├── S'inscrire (UC5)
+    ├── Se connecter (UC6)
+    └── Se déconnecter (UC15)
+
+• Consulter les événements
+    ├── Voir la liste (UC1)
+    ├── Rechercher (UC2)
+    ├── Filtrer (UC3)
+    └── Voir détails (UC4)
+
+• Gérer les événements (<<extend>> Authentification requise)
+    ├── Créer (UC7)
+    ├── Modifier (UC8)
+    └── Supprimer (UC9)
+
+• Gérer les favoris (<<extend>> Authentification requise)
+    ├── Ajouter (UC10)
+    ├── Retirer (UC11)
+    └── Consulter (UC12)
+
+• Automatisation (<<extend>> Authentification requise)
+    └── Déclencher scraping (UC14)
+
+================================================================================
+                           4. TYPES D'ÉVÉNEMENTS
+================================================================================
+
+Les événements peuvent être de 4 types:
+    1. conference - Conférence
+    2. concert - Concert
+    3. workshop - Atelier
+    4. meetup - Rencontre
+
+================================================================================
+                          5. STATUTS DES ÉVÉNEMENTS
+================================================================================
+
+Les événements peuvent avoir 3 statuts:
+    1. upcoming - À venir (par défaut)
+    2. completed - Terminé
+    3. cancelled - Annulé
+
+================================================================================
+                          6. ARCHITECTURE TECHNIQUE
+================================================================================
+
+FRONTEND:
+    - HTML5 / CSS3 / JavaScript (ES6+)
+    - Pages: index.html, login.html, register.html, favorites.html, 
+             event-detail.html, automation.html
+
+BACKEND (API REST):
+    - Node.js + Express.js
+    - JWT pour l'authentification
+    - MySQL pour la base de données
+
+ENDPOINTS API:
+    POST   /api/auth/register          - Inscription
+    POST   /api/auth/login             - Connexion
+    GET    /api/auth/me                - Profil (protégé)
+    
+    GET    /api/events                 - Liste événements
+    GET    /api/events/:id             - Détail événement
+    POST   /api/events                 - Créer (protégé)
+    PUT    /api/events/:id             - Modifier (protégé, owner)
+    DELETE /api/events/:id             - Supprimer (protégé, owner)
+    
+    GET    /api/favorites/my-favorites - Mes favoris (protégé)
+    POST   /api/favorites/:eventId     - Ajouter favori (protégé)
+    DELETE /api/favorites/:eventId     - Retirer favori (protégé)
+    
+    POST   /api/scraping/trigger       - Lancer scraping (protégé)
+
+================================================================================
+                     7. CARDINALITÉS POUR LE DIAGRAMME DE CLASSES
+================================================================================
+
+User ──────────────────────────────────────── Event
+        1                        0..*
+     (creator)              (events créés)
+
+User ──────────────────────────────────────── Favorite
+        1                        0..*
+                            (favoris de l'utilisateur)
+
+Event ─────────────────────────────────────── Favorite
+        1                        0..*
+                          (favoris contenant cet event)
+
+================================================================================
+                          FIN DU DOCUMENT
+================================================================================
