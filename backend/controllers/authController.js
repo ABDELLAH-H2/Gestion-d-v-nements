@@ -11,6 +11,17 @@ const generateToken = (userId) => {
     );
 };
 
+// Cookie options helper - detects if request is over HTTPS
+const getCookieOptions = (req) => {
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    return {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: isSecure ? 'none' : 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    };
+};
+
 // Register new user
 const register = async (req, res) => {
     try {
@@ -49,12 +60,7 @@ const register = async (req, res) => {
         );
 
         // Set secure cookie
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
+        res.cookie('token', token, getCookieOptions(req));
 
         res.status(201).json({
             success: true,
@@ -111,12 +117,7 @@ const login = async (req, res) => {
         delete user.password;
 
         // Set secure cookie
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
+        res.cookie('token', token, getCookieOptions(req));
 
         res.json({
             success: true,
@@ -138,12 +139,10 @@ const login = async (req, res) => {
 
 // Logout user
 const logout = (req, res) => {
-    res.clearCookie('token', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-    });
-    
+    const cookieOpts = getCookieOptions(req);
+    delete cookieOpts.maxAge; // Remove maxAge for clearCookie
+    res.clearCookie('token', cookieOpts);
+
     res.json({
         success: true,
         message: 'Logged out successfully'

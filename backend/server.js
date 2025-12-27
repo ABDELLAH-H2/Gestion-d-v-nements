@@ -14,12 +14,38 @@ const scrapingRoutes = require('./routes/scraping');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy - needed for secure cookies behind reverse proxies (Vercel, Render, etc.)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cookieParser());
+
+// CORS configuration for cross-origin cookies
+const allowedOrigins = [
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    // Add your Vercel deployment URLs
+    'https://gestion-dvnements-git-main-amin3aliouas-projects-6c824046.vercel.app',
+    // Add main production URL if different
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? process.env.FRONTEND_URL
-        : ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000'],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Check if origin is in allowed list or matches Vercel pattern
+        if (allowedOrigins.includes(origin) ||
+            origin.endsWith('.vercel.app') ||
+            origin.includes('gestion-dvnements')) {
+            callback(null, true);
+        } else {
+            callback(null, false);
+        }
+    },
     credentials: true
 }));
 // Increase body size limit to 50MB for base64 image uploads
