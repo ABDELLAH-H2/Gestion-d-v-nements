@@ -1462,14 +1462,15 @@ a:hover {
     display: flex;
     width: 100%;
     height: 100%;
-    /* Default fallback, though specific classes should be used */
-    animation: carouselScroll4 12s linear infinite;
+    /* Default fallback */
+    animation: carouselScroll4 16s ease-in-out infinite;
 }
 
 .event-card-image.carousel .carousel-slide {
     min-width: 100%;
     height: 100%;
-    flex-shrink: 0; /* Critical: prevents slides from shrinking and causing gaps */
+    flex-shrink: 0;
+    /* Critical: prevents slides from shrinking and causing gaps */
 }
 
 .event-card-image.carousel .carousel-slide img {
@@ -1509,50 +1510,122 @@ a:hover {
 
 /* 2 images + 1 loop = 3 slides */
 .carousel-2 .carousel-container {
-    animation: carouselScroll2 8s linear infinite;
+    animation: carouselScroll2 8s ease-in-out infinite;
 }
 
 @keyframes carouselScroll2 {
-    0%, 45% { transform: translateX(0); }
-    50%, 95% { transform: translateX(-100%); }
-    100% { transform: translateX(-200%); }
+
+    0%,
+    42% {
+        transform: translateX(0);
+    }
+
+    48%,
+    92% {
+        transform: translateX(-100%);
+    }
+
+    98%,
+    100% {
+        transform: translateX(-200%);
+    }
 }
 
 /* 3 images + 1 loop = 4 slides */
 .carousel-3 .carousel-container {
-    animation: carouselScroll3 12s linear infinite;
+    animation: carouselScroll3 12s ease-in-out infinite;
 }
 
 @keyframes carouselScroll3 {
-    0%, 30% { transform: translateX(0); }
-    33.33%, 63.33% { transform: translateX(-100%); }
-    66.66%, 96.66% { transform: translateX(-200%); }
-    100% { transform: translateX(-300%); }
+
+    0%,
+    28% {
+        transform: translateX(0);
+    }
+
+    33%,
+    61% {
+        transform: translateX(-100%);
+    }
+
+    66%,
+    94% {
+        transform: translateX(-200%);
+    }
+
+    99%,
+    100% {
+        transform: translateX(-300%);
+    }
 }
 
 /* 4 images + 1 loop = 5 slides */
 .carousel-4 .carousel-container {
-    animation: carouselScroll4 16s linear infinite;
+    animation: carouselScroll4 16s ease-in-out infinite;
 }
 
 @keyframes carouselScroll4 {
-    0%, 20% { transform: translateX(0); }
-    25%, 45% { transform: translateX(-100%); }
-    50%, 70% { transform: translateX(-200%); }
-    75%, 95% { transform: translateX(-300%); }
-    100% { transform: translateX(-400%); }
+
+    0%,
+    20% {
+        transform: translateX(0);
+    }
+
+    24%,
+    44% {
+        transform: translateX(-100%);
+    }
+
+    48%,
+    68% {
+        transform: translateX(-200%);
+    }
+
+    72%,
+    92% {
+        transform: translateX(-300%);
+    }
+
+    96%,
+    100% {
+        transform: translateX(-400%);
+    }
 }
 
 /* 5 images + 1 loop = 6 slides */
 .carousel-5 .carousel-container {
-    animation: carouselScroll5 20s linear infinite;
+    animation: carouselScroll5 20s ease-in-out infinite;
 }
 
 @keyframes carouselScroll5 {
-    0%, 16% { transform: translateX(0); }
-    20%, 36% { transform: translateX(-100%); }
-    40%, 56% { transform: translateX(-200%); }
-    60%, 76% { transform: translateX(-300%); }
-    80%, 96% { transform: translateX(-400%); }
-    100% { transform: translateX(-500%); }
+
+    0%,
+    16% {
+        transform: translateX(0);
+    }
+
+    19%,
+    35% {
+        transform: translateX(-100%);
+    }
+
+    38%,
+    54% {
+        transform: translateX(-200%);
+    }
+
+    57%,
+    73% {
+        transform: translateX(-300%);
+    }
+
+    76%,
+    92% {
+        transform: translateX(-400%);
+    }
+
+    95%,
+    100% {
+        transform: translateX(-500%);
+    }
 }
