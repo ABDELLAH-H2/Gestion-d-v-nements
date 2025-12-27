@@ -666,7 +666,10 @@
         let currentEvent = null;
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for auth initialization to complete
+            await api.init();
+
             updateNavigation();
             loadEventDetails();
 

@@ -2,7 +2,10 @@
 let scrapingLogs = [];
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for auth initialization to complete
+    await api.init();
+
     // Check authentication
     if (!isAuthenticated()) {
         showToast('Please login to access automation', 'warning');

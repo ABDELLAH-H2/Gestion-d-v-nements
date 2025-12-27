@@ -1,10 +1,11 @@
 // API Configuration and Utilities
 const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:3000/api'
+    ? `http://${window.location.hostname}:3000/api`
     : '/api';
 
 // State management (in-memory)
 let currentUser = null;
+let authPromise = null;
 
 // Get current user (from memory)
 const getUser = () => currentUser;
@@ -66,6 +67,26 @@ const apiRequest = async (endpoint, options = {}) => {
 // API Methods
 const api = {
     // Auth
+    init: () => {
+        if (!authPromise) {
+            // Only fetch user if we are NOT on login/register pages
+            if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html')) {
+                authPromise = api.getMe()
+                    .then(response => {
+                        if (response && response.success && response.user) {
+                            // setUser is already called inside getMe if successful, 
+                            // but let's return the user for the promise chain
+                            return response.user;
+                        }
+                        return null;
+                    })
+                    .catch(() => null);
+            } else {
+                authPromise = Promise.resolve(null);
+            }
+        }
+        return authPromise;
+    },
     register: async (data) => {
         const response = await apiRequest('/auth/register', { method: 'POST', body: data });
         if (response.success && response.user) {
@@ -100,8 +121,9 @@ const api = {
             }
             return response;
         } catch (error) {
-            currentUser = null;
-            updateNavigation();
+            // If getMe fails, we don't necessarily want to nuke everything immediately
+            // unless we are sure it's an auth error (handled in apiRequest)
+            // But if it fails, currentUser remains null (initial state)
             return null;
         }
     },
@@ -281,10 +303,8 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
 
-    // Only fetch user if we are NOT on login/register pages (to avoid double redirect loops or flashes)
-    if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html')) {
-        api.getMe();
-    }
+    // Initialize auth check
+    api.init();
 });
 
 // Export for use in other files

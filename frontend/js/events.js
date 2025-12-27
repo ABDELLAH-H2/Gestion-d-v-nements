@@ -8,7 +8,10 @@ let allEvents = [];
 let uploadedImages = []; // Store uploaded image data URLs
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for auth initialization to complete
+    await api.init();
+
     updateNavigation();
     setupEventListeners();
     loadEvents();
