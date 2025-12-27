@@ -242,6 +242,29 @@ a:hover {
     }
 }
 
+/* Spacing Utilities */
+.mt-8 {
+    margin-top: var(--space-8);
+}
+
+.mt-12 {
+    margin-top: var(--space-12);
+}
+
+.mb-8 {
+    margin-bottom: var(--space-8);
+}
+
+.py-8 {
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
+}
+
+.py-12 {
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-12);
+}
+
 /* ===== Header / Navigation ===== */
 .header {
     position: sticky;
