@@ -99,7 +99,7 @@
                 const response = await api.login({ email, password });
 
                 if (response.success) {
-                    setToken(response.token);
+                    // Token is automatically stored in secure HTTP-only cookie by the server
                     setUser(response.user);
                     showToast('Login successful! Redirecting...', 'success');
                     setTimeout(() => {

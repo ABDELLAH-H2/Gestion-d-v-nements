@@ -128,7 +128,7 @@
                 const response = await api.register({ username, email, password });
 
                 if (response.success) {
-                    setToken(response.token);
+                    // Token is automatically stored in secure HTTP-only cookie by the server
                     setUser(response.user);
                     showToast('Account created successfully!', 'success');
                     setTimeout(() => {
