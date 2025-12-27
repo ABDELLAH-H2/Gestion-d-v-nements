@@ -733,7 +733,24 @@
                 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200',
                 'https://images.unsplash.com/photo-1559223607-a43c990c692c?w=1200'
             ];
-            const imageUrl = event.image || placeholderImages[event.id % placeholderImages.length];
+            
+            let imageUrl = placeholderImages[event.id % placeholderImages.length];
+            
+            if (event.image) {
+                try {
+                    // Try to parse as JSON array (format used by create event)
+                    const parsedImages = JSON.parse(event.image);
+                    if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+                        imageUrl = parsedImages[0];
+                    } else if (typeof parsedImages === 'string') {
+                        imageUrl = parsedImages;
+                    }
+                } catch (e) {
+                    // If parse fails, assume it's a direct URL string
+                    imageUrl = event.image;
+                }
+            }
+            
             heroImg.src = imageUrl;
             heroImg.alt = event.name;
             heroImg.style.display = 'block';
