@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Details - EventScraper Hub</title>
-    <meta name="description" content="View event details on EventScraper Hub.">
+    <title>Event Details - Gestion d'Événements</title>
+    <meta name="description" content="View event details on Gestion d'Événements.">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -471,7 +471,7 @@
                 <div class="brand-icon">
                     <span class="material-symbols-outlined">hub</span>
                 </div>
-                <span class="brand-name">EventScraper Hub</span>
+                <span class="brand-name">Gestion d'Événements</span>
             </a>
 
             <div class="search-bar">
@@ -649,7 +649,7 @@
                         <div class="organizer-avatar" id="organizerInitials">EH</div>
                         <div>
                             <p class="organizer-label">Organized by</p>
-                            <p class="organizer-name" id="organizerName">EventScraper Hub</p>
+                            <p class="organizer-name" id="organizerName">Gestion d'Événements</p>
                         </div>
                         <button class="organizer-contact">
                             <span class="material-symbols-outlined">mail</span>
@@ -722,7 +722,7 @@
             console.log('Rendering event:', event);
 
             // Update page title
-            document.title = `${event.name} - EventScraper Hub`;
+            document.title = `${event.name} - Gestion d'Événements`;
 
             // Breadcrumb
             document.getElementById('breadcrumbTitle').textContent = event.name;
@@ -736,9 +736,9 @@
                 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200',
                 'https://images.unsplash.com/photo-1559223607-a43c990c692c?w=1200'
             ];
-            
+
             let imageUrl = placeholderImages[event.id % placeholderImages.length];
-            
+
             if (event.image) {
                 try {
                     // Try to parse as JSON array (format used by create event)
@@ -753,7 +753,7 @@
                     imageUrl = event.image;
                 }
             }
-            
+
             heroImg.src = imageUrl;
             heroImg.alt = event.name;
             heroImg.style.display = 'block';
@@ -828,7 +828,7 @@
             }
 
             // Organizer
-            const organizerName = event.creator_username || 'EventScraper Hub';
+            const organizerName = event.creator_username || 'Gestion d\'Événements';
             document.getElementById('organizerName').textContent = organizerName;
             document.getElementById('organizerInitials').textContent = organizerName.substring(0, 2).toUpperCase();
 

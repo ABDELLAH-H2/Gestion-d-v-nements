@@ -1,4 +1,4 @@
--- EventScraper Hub Database Schema (PostgreSQL)
+-- Gestion d'Événements Database Schema (PostgreSQL)
 
 -- Enable UUID extension if needed (though we use INTs, UUIDs are often preferred in Postgres)
 -- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

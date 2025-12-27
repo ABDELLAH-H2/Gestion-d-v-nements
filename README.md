@@ -1,4 +1,4 @@
-# EventScraper Hub - Event Management System
+# Gestion d'Événements - Event Management System
 
 ## 🎯 Description
 

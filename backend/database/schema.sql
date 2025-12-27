@@ -1,4 +1,4 @@
--- EventScraper Hub Database Schema
+-- Gestion d'Événements Database Schema
 -- Run this to set up your MySQL database
 
 CREATE DATABASE IF NOT EXISTS eventscraper_hub;

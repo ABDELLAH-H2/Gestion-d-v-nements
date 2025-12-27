@@ -65,7 +65,7 @@ app.use('/api/scraping', scrapingRoutes);
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
-        message: 'EventScraper Hub API is running',
+        message: 'Gestion d\'Événements API is running',
         timestamp: new Date().toISOString()
     });
 });
