@@ -145,46 +145,25 @@ const createEventCard = (event, user) => {
         'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=600'
     ];
 
-    // Parse images - could be JSON array or single URL string
-    let images = [];
+    // Get single image
+    let eventImage = '';
     if (event.image) {
+        // Handle both JSON array (legacy) and single string
         try {
-            images = JSON.parse(event.image);
-            if (!Array.isArray(images)) images = [event.image];
+            const parsed = JSON.parse(event.image);
+            eventImage = Array.isArray(parsed) ? parsed[0] : event.image;
         } catch {
-            images = [event.image];
+            eventImage = event.image;
         }
     }
-    if (images.length === 0) {
-        images = [placeholderImages[event.id % placeholderImages.length]];
+    if (!eventImage) {
+        eventImage = placeholderImages[event.id % placeholderImages.length];
     }
-
-    // Generate image carousel or single image
-    const hasMultipleImages = images.length > 1;
-    const carouselClass = hasMultipleImages ? `carousel carousel-${Math.min(images.length, 5)}` : '';
-
-    const imageHTML = hasMultipleImages ? `
-        <div class="carousel-container">
-            ${images.map((img, idx) => `
-                <div class="carousel-slide">
-                    <img src="${img}" alt="${event.name} - Image ${idx + 1}" onerror="this.onerror=null; this.src='${placeholderImages[0]}'">
-                </div>
-            `).join('')}
-            <div class="carousel-slide">
-                <img src="${images[0]}" alt="${event.name} - Loop" onerror="this.onerror=null; this.src='${placeholderImages[0]}'">
-            </div>
-        </div>
-        <div class="carousel-indicators">
-            ${images.map((_, idx) => `<div class="carousel-indicator ${idx === 0 ? 'active' : ''}"></div>`).join('')}
-        </div>
-    ` : `
-        <img src="${images[0]}" alt="${event.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><span class=\\'material-symbols-outlined\\'>event</span></div>'">
-    `;
 
     return `
         <article class="card event-card" data-id="${event.id}">
-            <div class="event-card-image ${carouselClass}">
-                ${imageHTML}
+            <div class="event-card-image">
+                <img src="${eventImage}" alt="${event.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><span class=\\'material-symbols-outlined\\'>event</span></div>'">
                 <div class="event-badges">
                     <span class="badge ${statusBadgeClass}">${statusLabel}</span>
                     <span class="badge badge-type">${event.type}</span>
@@ -347,7 +326,7 @@ const handleEventSubmit = async (e) => {
         location: document.getElementById('eventLocation').value,
         capacity: parseInt(document.getElementById('eventCapacity').value) || 100,
         price: parseFloat(document.getElementById('eventPrice').value) || 0,
-        image: uploadedImages.length > 0 ? JSON.stringify(uploadedImages) : null
+        image: uploadedImages.length > 0 ? uploadedImages[0] : null
     };
 
     try {
@@ -435,13 +414,13 @@ const processImageFiles = (files) => {
         return;
     }
 
-    // Limit to 5 images total
-    const remainingSlots = 5 - uploadedImages.length;
-    const filesToProcess = webpFiles.slice(0, remainingSlots);
-
-    if (filesToProcess.length < webpFiles.length) {
-        showToast(`Maximum 5 images allowed. Only ${filesToProcess.length} image(s) added.`, 'warning');
+    // Only allow 1 image
+    if (uploadedImages.length >= 1) {
+        showToast('Only 1 image allowed. Remove the current image first.', 'warning');
+        return;
     }
+
+    const filesToProcess = webpFiles.slice(0, 1);
 
     // Convert files to data URLs
     filesToProcess.forEach(file => {
@@ -476,13 +455,7 @@ const updateImagePreviews = () => {
             <img src="${img}" alt="Preview ${index + 1}">
             <button type="button" class="remove-image" onclick="removeImage(${index})" title="Remove image">×</button>
         </div>
-    `).join('') + `
-        ${uploadedImages.length < 5 ? `
-            <div class="image-preview" style="display: flex; align-items: center; justify-content: center; background: var(--surface-light); cursor: pointer;" onclick="document.getElementById('eventImages').click()">
-                <span class="material-symbols-outlined" style="color: var(--text-grey);">add_photo_alternate</span>
-            </div>
-        ` : ''}
-    `;
+    `).join('');
 };
 
 // Remove image from uploaded array
