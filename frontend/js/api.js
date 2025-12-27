@@ -277,6 +277,10 @@ document.addEventListener('click', (e) => {
 
 // Initialize app: Check for existing session
 document.addEventListener('DOMContentLoaded', () => {
+    // Clean up old localStorage data from previous version (now using secure cookies instead)
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
     // Only fetch user if we are NOT on login/register pages (to avoid double redirect loops or flashes)
     if (!window.location.pathname.includes('login.html') && !window.location.pathname.includes('register.html')) {
         api.getMe();
