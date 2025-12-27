@@ -1630,3 +1630,133 @@ a:hover {
         transform: translateX(-500%);
     }
 }
+
+/* ===== User Dropdown Styles ===== */
+.user-menu {
+    position: relative;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: 280px;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    z-index: 100;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+.user-dropdown.hidden {
+    display: none;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(34, 211, 238, 0.05) 100%);
+}
+
+.dropdown-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid var(--primary);
+    flex-shrink: 0;
+}
+
+.dropdown-user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.dropdown-username {
+    font-weight: 700;
+    font-size: var(--font-size-base);
+    color: var(--text-white);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-email {
+    font-size: var(--font-size-sm);
+    color: var(--text-grey);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-grey);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+}
+
+.dropdown-item:hover {
+    background: var(--surface-light);
+    color: var(--text-white);
+}
+
+.dropdown-item .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--text-grey);
+    transition: color var(--transition-fast);
+}
+
+.dropdown-item:hover .material-symbols-outlined {
+    color: var(--primary);
+}
+
+.dropdown-logout {
+    color: var(--danger);
+    margin-top: 0;
+}
+
+.dropdown-logout:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+.dropdown-logout .material-symbols-outlined,
+.dropdown-logout:hover .material-symbols-outlined {
+    color: var(--danger);
+}

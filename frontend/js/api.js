@@ -238,20 +238,20 @@ const updateNavigation = () => {
     userMenus.forEach(menu => {
         if (user) {
             menu.innerHTML = `
-                <button class="notification-btn">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span class="notification-dot"></span>
-                </button>
                 <div class="user-avatar" 
                      style="background-image: url('${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=6366F1&color=fff'}')"
                      title="${user.username}"
                      onclick="toggleUserDropdown()">
                 </div>
                 <div class="user-dropdown hidden" id="userDropdown">
-                    <div class="dropdown-header">
-                        <strong>${user.username}</strong>
-                        <span>${user.email || ''}</span>
+                    <div class="dropdown-user-info">
+                        <div class="dropdown-avatar" style="background-image: url('${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=6366F1&color=fff'}')"></div>
+                        <div class="dropdown-user-details">
+                            <span class="dropdown-username">${user.username}</span>
+                            <span class="dropdown-email">${user.email || ''}</span>
+                        </div>
                     </div>
+                    <div class="dropdown-divider"></div>
                     <a href="/favorites.html" class="dropdown-item">
                         <span class="material-symbols-outlined">favorite</span>
                         My Favorites
@@ -260,7 +260,8 @@ const updateNavigation = () => {
                         <span class="material-symbols-outlined">smart_toy</span>
                         Automation
                     </a>
-                    <button class="dropdown-item" onclick="logout()">
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item dropdown-logout" onclick="logout()">
                         <span class="material-symbols-outlined">logout</span>
                         Logout
                     </button>
