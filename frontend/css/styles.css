@@ -972,24 +972,55 @@ a:hover {
 }
 
 .load-more-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-4) var(--space-6);
-    background: var(--surface-dark);
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-8);
+    background: linear-gradient(135deg, var(--surface-dark) 0%, var(--surface-light) 100%);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-full);
     color: var(--text-white);
     font-family: inherit;
     font-size: var(--font-size-base);
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.load-more-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    z-index: -1;
 }
 
 .load-more-btn:hover {
     border-color: var(--primary);
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 0 20px var(--primary-glow), 0 8px 24px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.load-more-btn:hover::before {
+    opacity: 1;
+}
+
+.load-more-btn .material-symbols-outlined {
+    font-size: 20px;
+    transition: transform var(--transition-base);
+}
+
+.load-more-btn:hover .material-symbols-outlined {
+    transform: rotate(180deg);
+}
+
+.load-more-btn:active {
+    transform: translateY(0);
 }
 
 /* ===== Empty State ===== */
