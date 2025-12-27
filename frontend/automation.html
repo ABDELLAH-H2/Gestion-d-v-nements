@@ -292,16 +292,6 @@
                     <p style="color: var(--text-grey);">Manage background jobs, integrations, and data scraping
                         workflows.</p>
                 </div>
-                <div class="flex gap-3">
-                    <button class="btn btn-ghost">
-                        <span class="material-symbols-outlined">history</span>
-                        View Logs
-                    </button>
-                    <button class="btn btn-ghost">
-                        <span class="material-symbols-outlined">settings</span>
-                        Configure
-                    </button>
-                </div>
             </div>
         </header>
 
@@ -374,12 +364,20 @@
                     </div>
 
                     <div style="margin-top: 1.5rem;">
-                        <button class="scrape-btn" id="triggerScrapingBtn" onclick="triggerScraping()">
-                            <span class="flex items-center gap-2">
-                                <span class="material-symbols-outlined">bolt</span>
-                                Trigger n8n Google Maps Scraper
-                            </span>
-                        </button>
+                        <div class="flex gap-3" style="flex-wrap: wrap;">
+                            <button class="scrape-btn" id="triggerScrapingBtn" onclick="triggerScraping()">
+                                <span class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined">bolt</span>
+                                    Trigger n8n Google Maps Scraper
+                                </span>
+                            </button>
+                            <a href="https://docs.google.com/spreadsheets/d/17r8ajS1rf37OUjl2meAkKmkqObcuf1q992G6Bn64DV8/edit?gid=0#gid=0"
+                                target="_blank" class="btn"
+                                style="background: #34A853; color: white; font-weight: 700; padding: 1rem 2rem; border-radius: var(--radius-xl); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                                <span class="material-symbols-outlined">table_view</span>
+                                View Google Sheets
+                            </a>
+                        </div>
                         <div class="last-run" id="lastRunInfo">
                             <span class="material-symbols-outlined" style="font-size: 18px;">schedule</span>
                             <span>Last Run: Never</span>

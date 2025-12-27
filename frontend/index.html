@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventScraper Hub - Discover Amazing Events</title>
-    <meta name="description" content="Discover and manage events with EventScraper Hub. Find conferences, concerts, workshops, and meetups near you.">
-    
+    <meta name="description"
+        content="Discover and manage events with EventScraper Hub. Find conferences, concerts, workshops, and meetups near you.">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <!-- Header -->
     <header class="header">
@@ -72,7 +77,8 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
 
-                    <button class="btn btn-primary" onclick="openCreateEventModal()" id="createEventBtn" style="display: none;">
+                    <button class="btn btn-primary" onclick="openCreateEventModal()" id="createEventBtn"
+                        style="display: none;">
                         <span class="material-symbols-outlined">add</span>
                         Create Event
                     </button>
@@ -122,7 +128,7 @@
             <form id="eventForm" onsubmit="handleEventSubmit(event)">
                 <div class="modal-body">
                     <input type="hidden" id="eventId">
-                    
+
                     <div class="form-group">
                         <label class="form-label" for="eventName">Event Name *</label>
                         <input type="text" id="eventName" class="form-input" placeholder="Enter event name" required>
@@ -152,7 +158,8 @@
 
                     <div class="form-group">
                         <label class="form-label" for="eventDescription">Description</label>
-                        <textarea id="eventDescription" class="form-textarea" placeholder="Describe your event..."></textarea>
+                        <textarea id="eventDescription" class="form-textarea"
+                            placeholder="Describe your event..."></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -185,8 +192,20 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="eventImage">Image URL</label>
-                        <input type="url" id="eventImage" class="form-input" placeholder="https://example.com/image.jpg">
+                        <label class="form-label" for="eventImages">Event Images (WebP only, multiple allowed)</label>
+                        <div class="image-upload-area" id="imageUploadArea"
+                            onclick="document.getElementById('eventImages').click()">
+                            <input type="file" id="eventImages" class="hidden" accept="image/webp" multiple
+                                onchange="handleImageUpload(event)">
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 48px; color: var(--primary);">cloud_upload</span>
+                                <p style="margin-top: 0.5rem; color: var(--text-grey);">Click to upload WebP images</p>
+                                <p style="font-size: 0.75rem; color: var(--text-grey);">Maximum 5 images, WebP format
+                                    only</p>
+                            </div>
+                            <div class="image-previews hidden" id="imagePreviews"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -220,4 +239,5 @@
     <script src="js/api.js"></script>
     <script src="js/events.js"></script>
 </body>
+
 </html>

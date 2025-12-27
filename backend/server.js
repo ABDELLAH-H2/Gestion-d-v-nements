@@ -20,8 +20,9 @@ app.use(cors({
         : ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000'],
     credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Increase body size limit to 50MB for base64 image uploads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve static files from frontend folder (for production)
 app.use(express.static(path.join(__dirname, '../frontend')));

@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS events (
     capacity INT DEFAULT 100,
     price DECIMAL(10, 2) DEFAULT 0.00,
     status ENUM('upcoming', 'completed', 'cancelled') DEFAULT 'upcoming',
-    image VARCHAR(500) DEFAULT NULL,
+    image LONGTEXT DEFAULT NULL,
     creator_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

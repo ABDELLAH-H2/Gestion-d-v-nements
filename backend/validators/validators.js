@@ -98,8 +98,7 @@ const eventSchema = Joi.object({
         .valid('upcoming', 'completed', 'cancelled')
         .default('upcoming'),
     image: Joi.string()
-        .uri()
-        .allow('')
+        .allow('', null)
         .optional()
 });
 
@@ -114,7 +113,7 @@ const eventUpdateSchema = Joi.object({
     capacity: Joi.number().integer().min(1).max(100000).optional(),
     price: Joi.number().min(0).max(99999.99).optional(),
     status: Joi.string().valid('upcoming', 'completed', 'cancelled').optional(),
-    image: Joi.string().uri().allow('').optional()
+    image: Joi.string().allow('', null).optional()
 });
 
 // Scraping trigger validation

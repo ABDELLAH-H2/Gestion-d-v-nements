@@ -91,10 +91,34 @@ const triggerScraping = async () => {
 
             // Open Google Sheet if URL provided
             if (response.sheetUrl) {
-                showToast('Opening Google Sheet with results...', 'success');
+                showToast('Scraping complete! Click the button below to view results.', 'success');
+                
+                // Change button to "View Results"
+                triggerBtn.disabled = false;
+                triggerBtn.className = 'btn btn-success'; // Ensure you have a success class or use inline style
+                triggerBtn.style.backgroundColor = '#10B981'; // Green color
+                triggerBtn.innerHTML = `
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined">table_view</span>
+                        View Scraped Results
+                    </span>
+                `;
+                triggerBtn.onclick = () => window.open(response.sheetUrl, '_blank');
+                
+                // Reset button after 10 seconds
                 setTimeout(() => {
-                    window.open(response.sheetUrl, '_blank');
-                }, 1000);
+                    triggerBtn.className = 'btn btn-primary';
+                    triggerBtn.style.backgroundColor = '';
+                    triggerBtn.innerHTML = `
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined">bolt</span>
+                            Trigger n8n Google Maps Scraper
+                        </span>
+                    `;
+                    triggerBtn.onclick = triggerScraping;
+                }, 10000);
+                
+                return; // Stop here so we don't reset the button immediately in 'finally'
             }
         }
     } catch (error) {
@@ -110,14 +134,16 @@ const triggerScraping = async () => {
             time: 'Just now'
         });
     } finally {
-        // Re-enable button
-        triggerBtn.disabled = false;
-        triggerBtn.innerHTML = `
-            <span class="flex items-center gap-2">
-                <span class="material-symbols-outlined">bolt</span>
-                Trigger n8n Google Maps Scraper
-            </span>
-        `;
+        // Only reset if we didn't just show the success button
+        if (!triggerBtn.innerHTML.includes('View Scraped Results')) {
+            triggerBtn.disabled = false;
+            triggerBtn.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined">bolt</span>
+                    Trigger n8n Google Maps Scraper
+                </span>
+            `;
+        }
     }
 };
 

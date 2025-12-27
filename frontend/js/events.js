@@ -5,6 +5,7 @@ let currentStatus = '';
 let currentSearch = '';
 let totalPages = 1;
 let allEvents = [];
+let uploadedImages = []; // Store uploaded image data URLs
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
@@ -143,12 +144,47 @@ const createEventCard = (event, user) => {
         'https://images.unsplash.com/photo-1559223607-a43c990c692c?w=600',
         'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=600'
     ];
-    const imageUrl = event.image || placeholderImages[event.id % placeholderImages.length];
+
+    // Parse images - could be JSON array or single URL string
+    let images = [];
+    if (event.image) {
+        try {
+            images = JSON.parse(event.image);
+            if (!Array.isArray(images)) images = [event.image];
+        } catch {
+            images = [event.image];
+        }
+    }
+    if (images.length === 0) {
+        images = [placeholderImages[event.id % placeholderImages.length]];
+    }
+
+    // Generate image carousel or single image
+    const hasMultipleImages = images.length > 1;
+    const carouselClass = hasMultipleImages ? `carousel carousel-${Math.min(images.length, 5)}` : '';
+
+    const imageHTML = hasMultipleImages ? `
+        <div class="carousel-container">
+            ${images.map((img, idx) => `
+                <div class="carousel-slide">
+                    <img src="${img}" alt="${event.name} - Image ${idx + 1}" onerror="this.onerror=null; this.src='${placeholderImages[0]}'">
+                </div>
+            `).join('')}
+            <div class="carousel-slide">
+                <img src="${images[0]}" alt="${event.name} - Loop" onerror="this.onerror=null; this.src='${placeholderImages[0]}'">
+            </div>
+        </div>
+        <div class="carousel-indicators">
+            ${images.map((_, idx) => `<div class="carousel-indicator ${idx === 0 ? 'active' : ''}"></div>`).join('')}
+        </div>
+    ` : `
+        <img src="${images[0]}" alt="${event.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><span class=\\'material-symbols-outlined\\'>event</span></div>'">
+    `;
 
     return `
         <article class="card event-card" data-id="${event.id}">
-            <div class="event-card-image">
-                <img src="${imageUrl}" alt="${event.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><span class=\\'material-symbols-outlined\\'>event</span></div>'">
+            <div class="event-card-image ${carouselClass}">
+                ${imageHTML}
                 <div class="event-badges">
                     <span class="badge ${statusBadgeClass}">${statusLabel}</span>
                     <span class="badge badge-type">${event.type}</span>
@@ -267,7 +303,22 @@ const openEditEventModal = async (eventId) => {
             document.getElementById('eventLocation').value = event.location;
             document.getElementById('eventCapacity').value = event.capacity || '';
             document.getElementById('eventPrice').value = event.price || '';
-            document.getElementById('eventImage').value = event.image || '';
+
+            // Handle images for edit mode
+            uploadedImages = [];
+            if (event.image) {
+                try {
+                    const imgs = JSON.parse(event.image);
+                    if (Array.isArray(imgs)) {
+                        uploadedImages = imgs;
+                    } else {
+                        uploadedImages = [event.image];
+                    }
+                } catch {
+                    uploadedImages = event.image ? [event.image] : [];
+                }
+            }
+            updateImagePreviews();
 
             document.getElementById('eventModal').classList.add('active');
         }
@@ -296,7 +347,7 @@ const handleEventSubmit = async (e) => {
         location: document.getElementById('eventLocation').value,
         capacity: parseInt(document.getElementById('eventCapacity').value) || 100,
         price: parseFloat(document.getElementById('eventPrice').value) || 0,
-        image: document.getElementById('eventImage').value || null
+        image: uploadedImages.length > 0 ? JSON.stringify(uploadedImages) : null
     };
 
     try {
@@ -359,6 +410,113 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay.active').forEach(modal => {
             modal.classList.remove('active');
+        });
+    }
+});
+
+// ===== Image Upload Handling =====
+
+// Handle image upload from file input
+const handleImageUpload = (event) => {
+    const files = Array.from(event.target.files);
+    processImageFiles(files);
+};
+
+// Process uploaded image files
+const processImageFiles = (files) => {
+    // Filter for WebP only
+    const webpFiles = files.filter(file => file.type === 'image/webp');
+
+    if (webpFiles.length !== files.length) {
+        showToast('Only WebP images are allowed for best performance', 'warning');
+    }
+
+    if (webpFiles.length === 0) {
+        return;
+    }
+
+    // Limit to 5 images total
+    const remainingSlots = 5 - uploadedImages.length;
+    const filesToProcess = webpFiles.slice(0, remainingSlots);
+
+    if (filesToProcess.length < webpFiles.length) {
+        showToast(`Maximum 5 images allowed. Only ${filesToProcess.length} image(s) added.`, 'warning');
+    }
+
+    // Convert files to data URLs
+    filesToProcess.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadedImages.push(e.target.result);
+            updateImagePreviews();
+        };
+        reader.readAsDataURL(file);
+    });
+};
+
+// Update image previews display
+const updateImagePreviews = () => {
+    const placeholder = document.getElementById('uploadPlaceholder');
+    const previews = document.getElementById('imagePreviews');
+
+    if (!placeholder || !previews) return;
+
+    if (uploadedImages.length === 0) {
+        placeholder.classList.remove('hidden');
+        previews.classList.add('hidden');
+        previews.innerHTML = '';
+        return;
+    }
+
+    placeholder.classList.add('hidden');
+    previews.classList.remove('hidden');
+
+    previews.innerHTML = uploadedImages.map((img, index) => `
+        <div class="image-preview">
+            <img src="${img}" alt="Preview ${index + 1}">
+            <button type="button" class="remove-image" onclick="removeImage(${index})" title="Remove image">×</button>
+        </div>
+    `).join('') + `
+        ${uploadedImages.length < 5 ? `
+            <div class="image-preview" style="display: flex; align-items: center; justify-content: center; background: var(--surface-light); cursor: pointer;" onclick="document.getElementById('eventImages').click()">
+                <span class="material-symbols-outlined" style="color: var(--text-grey);">add_photo_alternate</span>
+            </div>
+        ` : ''}
+    `;
+};
+
+// Remove image from uploaded array
+const removeImage = (index) => {
+    uploadedImages.splice(index, 1);
+    updateImagePreviews();
+};
+
+// Reset image uploads when opening create modal
+const originalOpenCreateEventModal = openCreateEventModal;
+openCreateEventModal = () => {
+    uploadedImages = [];
+    updateImagePreviews();
+    originalOpenCreateEventModal();
+};
+
+// Setup drag and drop for image upload area
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadArea = document.getElementById('imageUploadArea');
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            processImageFiles(files);
         });
     }
 });
