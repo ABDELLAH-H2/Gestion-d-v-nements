@@ -68,6 +68,12 @@ app.use((err, req, res, next) => {
 
 // Start server
 const startServer = async () => {
+    // Validate critical environment variables
+    if (!process.env.JWT_SECRET) {
+        console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
+        process.exit(1);
+    }
+
     try {
         await testConnection();
         app.listen(PORT, () => {
