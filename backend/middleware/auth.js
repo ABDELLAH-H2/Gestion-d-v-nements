@@ -19,8 +19,8 @@ const authMiddleware = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Get user from database
-        const [users] = await pool.query(
-            'SELECT id, username, email, avatar, created_at FROM users WHERE id = ?',
+        const { rows: users } = await pool.query(
+            'SELECT id, username, email, avatar, created_at FROM users WHERE id = $1',
             [decoded.userId]
         );
 
@@ -68,8 +68,8 @@ const optionalAuth = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const [users] = await pool.query(
-            'SELECT id, username, email, avatar, created_at FROM users WHERE id = ?',
+        const { rows: users } = await pool.query(
+            'SELECT id, username, email, avatar, created_at FROM users WHERE id = $1',
             [decoded.userId]
         );
 

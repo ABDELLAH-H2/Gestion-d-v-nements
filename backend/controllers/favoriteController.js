@@ -7,8 +7,8 @@ const addFavorite = async (req, res) => {
         const userId = req.user.id;
 
         // Check if event exists
-        const [events] = await pool.query(
-            'SELECT id FROM events WHERE id = ?',
+        const { rows: events } = await pool.query(
+            'SELECT id FROM events WHERE id = $1',
             [eventId]
         );
 
@@ -20,8 +20,8 @@ const addFavorite = async (req, res) => {
         }
 
         // Check if already favorited
-        const [existing] = await pool.query(
-            'SELECT id FROM favorites WHERE user_id = ? AND event_id = ?',
+        const { rows: existing } = await pool.query(
+            'SELECT id FROM favorites WHERE user_id = $1 AND event_id = $2',
             [userId, eventId]
         );
 
@@ -34,7 +34,7 @@ const addFavorite = async (req, res) => {
 
         // Add to favorites
         await pool.query(
-            'INSERT INTO favorites (user_id, event_id) VALUES (?, ?)',
+            'INSERT INTO favorites (user_id, event_id) VALUES ($1, $2)',
             [userId, eventId]
         );
 
@@ -58,8 +58,8 @@ const removeFavorite = async (req, res) => {
         const userId = req.user.id;
 
         // Check if favorite exists
-        const [existing] = await pool.query(
-            'SELECT id FROM favorites WHERE user_id = ? AND event_id = ?',
+        const { rows: existing } = await pool.query(
+            'SELECT id FROM favorites WHERE user_id = $1 AND event_id = $2',
             [userId, eventId]
         );
 
@@ -72,7 +72,7 @@ const removeFavorite = async (req, res) => {
 
         // Remove from favorites
         await pool.query(
-            'DELETE FROM favorites WHERE user_id = ? AND event_id = ?',
+            'DELETE FROM favorites WHERE user_id = $1 AND event_id = $2',
             [userId, eventId]
         );
 
@@ -97,21 +97,21 @@ const getMyFavorites = async (req, res) => {
         const offset = (parseInt(page) - 1) * parseInt(limit);
 
         // Get total count
-        const [countResult] = await pool.query(
-            'SELECT COUNT(*) as total FROM favorites WHERE user_id = ?',
+        const { rows: countResult } = await pool.query(
+            'SELECT COUNT(*) as total FROM favorites WHERE user_id = $1',
             [userId]
         );
-        const total = countResult[0].total;
+        const total = parseInt(countResult[0].total);
 
         // Get favorite events
-        const [favorites] = await pool.query(
+        const { rows: favorites } = await pool.query(
             `SELECT e.*, u.username as creator_username, f.created_at as favorited_at
              FROM favorites f
              JOIN events e ON f.event_id = e.id
              LEFT JOIN users u ON e.creator_id = u.id
-             WHERE f.user_id = ?
+             WHERE f.user_id = $1
              ORDER BY f.created_at DESC
-             LIMIT ? OFFSET ?`,
+             LIMIT $2 OFFSET $3`,
             [userId, parseInt(limit), offset]
         );
 

@@ -16,24 +16,28 @@ const getEvents = async (req, res) => {
         const offset = (parseInt(page) - 1) * parseInt(limit);
         const params = [];
         let whereClause = 'WHERE 1=1';
+        let paramIndex = 1;
 
         // Search filter
         if (search) {
-            whereClause += ' AND (name LIKE ? OR location LIKE ? OR description LIKE ?)';
+            whereClause += ` AND (name LIKE $${paramIndex} OR location LIKE $${paramIndex+1} OR description LIKE $${paramIndex+2})`;
             const searchTerm = `%${search}%`;
             params.push(searchTerm, searchTerm, searchTerm);
+            paramIndex += 3;
         }
 
         // Type filter
         if (type) {
-            whereClause += ' AND type = ?';
+            whereClause += ` AND type = $${paramIndex}`;
             params.push(type);
+            paramIndex++;
         }
 
         // Status filter
         if (status) {
-            whereClause += ' AND status = ?';
+            whereClause += ` AND status = $${paramIndex}`;
             params.push(status);
+            paramIndex++;
         }
 
         // Valid sort columns
@@ -42,27 +46,27 @@ const getEvents = async (req, res) => {
         const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
         // Get total count
-        const [countResult] = await pool.query(
+        const { rows: countResult } = await pool.query(
             `SELECT COUNT(*) as total FROM events ${whereClause}`,
             params
         );
-        const total = countResult[0].total;
+        const total = parseInt(countResult[0].total);
 
         // Get events with creator info
-        const [events] = await pool.query(
+        const { rows: events } = await pool.query(
             `SELECT e.*, u.username as creator_username, u.avatar as creator_avatar
              FROM events e
              LEFT JOIN users u ON e.creator_id = u.id
              ${whereClause}
              ORDER BY ${sortColumn} ${sortOrder}
-             LIMIT ? OFFSET ?`,
+             LIMIT $${paramIndex} OFFSET $${paramIndex+1}`,
             [...params, parseInt(limit), offset]
         );
 
         // If user is authenticated, check favorites
         if (req.user) {
-            const [favorites] = await pool.query(
-                'SELECT event_id FROM favorites WHERE user_id = ?',
+            const { rows: favorites } = await pool.query(
+                'SELECT event_id FROM favorites WHERE user_id = $1',
                 [req.user.id]
             );
             const favoriteIds = new Set(favorites.map(f => f.event_id));
@@ -100,11 +104,11 @@ const getEventById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const [events] = await pool.query(
+        const { rows: events } = await pool.query(
             `SELECT e.*, u.username as creator_username, u.avatar as creator_avatar
              FROM events e
              LEFT JOIN users u ON e.creator_id = u.id
-             WHERE e.id = ?`,
+             WHERE e.id = $1`,
             [id]
         );
 
@@ -119,8 +123,8 @@ const getEventById = async (req, res) => {
 
         // Check if favorite for authenticated user
         if (req.user) {
-            const [favorites] = await pool.query(
-                'SELECT id FROM favorites WHERE user_id = ? AND event_id = ?',
+            const { rows: favorites } = await pool.query(
+                'SELECT id FROM favorites WHERE user_id = $1 AND event_id = $2',
                 [req.user.id, id]
             );
             event.isFavorite = favorites.length > 0;
@@ -157,21 +161,21 @@ const createEvent = async (req, res) => {
             image
         } = req.validatedBody;
 
-        const [result] = await pool.query(
+        const { rows: result } = await pool.query(
             `INSERT INTO events 
              (name, type, description, date, end_date, location, capacity, price, status, image, creator_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
             [name, type, description || null, date, end_date || null, location,
                 capacity || 100, price || 0, status || 'upcoming', image || null, req.user.id]
         );
 
         // Get created event
-        const [events] = await pool.query(
+        const { rows: events } = await pool.query(
             `SELECT e.*, u.username as creator_username
              FROM events e
              LEFT JOIN users u ON e.creator_id = u.id
-             WHERE e.id = ?`,
-            [result.insertId]
+             WHERE e.id = $1`,
+            [result[0].id]
         );
 
         res.status(201).json({
@@ -194,8 +198,8 @@ const updateEvent = async (req, res) => {
         const { id } = req.params;
 
         // Check if event exists and user is the creator
-        const [existingEvents] = await pool.query(
-            'SELECT * FROM events WHERE id = ?',
+        const { rows: existingEvents } = await pool.query(
+            'SELECT * FROM events WHERE id = $1',
             [id]
         );
 
@@ -219,10 +223,12 @@ const updateEvent = async (req, res) => {
         const allowedFields = ['name', 'type', 'description', 'date', 'end_date',
             'location', 'capacity', 'price', 'status', 'image'];
 
+        let paramIndex = 1;
         for (const field of allowedFields) {
             if (req.validatedBody[field] !== undefined) {
-                updates.push(`${field} = ?`);
+                updates.push(`${field} = $${paramIndex}`);
                 values.push(req.validatedBody[field]);
+                paramIndex++;
             }
         }
 
@@ -236,16 +242,16 @@ const updateEvent = async (req, res) => {
         values.push(id);
 
         await pool.query(
-            `UPDATE events SET ${updates.join(', ')} WHERE id = ?`,
+            `UPDATE events SET ${updates.join(', ')} WHERE id = $${paramIndex}`,
             values
         );
 
         // Get updated event
-        const [events] = await pool.query(
+        const { rows: events } = await pool.query(
             `SELECT e.*, u.username as creator_username
              FROM events e
              LEFT JOIN users u ON e.creator_id = u.id
-             WHERE e.id = ?`,
+             WHERE e.id = $1`,
             [id]
         );
 
@@ -269,8 +275,8 @@ const deleteEvent = async (req, res) => {
         const { id } = req.params;
 
         // Check if event exists and user is the creator
-        const [existingEvents] = await pool.query(
-            'SELECT * FROM events WHERE id = ?',
+        const { rows: existingEvents } = await pool.query(
+            'SELECT * FROM events WHERE id = $1',
             [id]
         );
 
@@ -288,7 +294,7 @@ const deleteEvent = async (req, res) => {
             });
         }
 
-        await pool.query('DELETE FROM events WHERE id = ?', [id]);
+        await pool.query('DELETE FROM events WHERE id = $1', [id]);
 
         res.json({
             success: true,

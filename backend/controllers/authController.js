@@ -17,8 +17,8 @@ const register = async (req, res) => {
         const { username, email, password } = req.validatedBody;
 
         // Check if user already exists
-        const [existingUsers] = await pool.query(
-            'SELECT id FROM users WHERE email = ? OR username = ?',
+        const { rows: existingUsers } = await pool.query(
+            'SELECT id FROM users WHERE email = $1 OR username = $2',
             [email, username]
         );
 
@@ -34,18 +34,18 @@ const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Insert user
-        const [result] = await pool.query(
-            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+        const { rows: result } = await pool.query(
+            'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id',
             [username, email, hashedPassword]
         );
 
         // Generate token
-        const token = generateToken(result.insertId);
+        const token = generateToken(result[0].id);
 
         // Get created user (without password)
-        const [users] = await pool.query(
-            'SELECT id, username, email, avatar, created_at FROM users WHERE id = ?',
-            [result.insertId]
+        const { rows: users } = await pool.query(
+            'SELECT id, username, email, avatar, created_at FROM users WHERE id = $1',
+            [result[0].id]
         );
 
         res.status(201).json({
@@ -69,8 +69,8 @@ const login = async (req, res) => {
         const { email, password } = req.validatedBody;
 
         // Find user
-        const [users] = await pool.query(
-            'SELECT * FROM users WHERE email = ?',
+        const { rows: users } = await pool.query(
+            'SELECT * FROM users WHERE email = $1',
             [email]
         );
 

@@ -38,7 +38,7 @@ const triggerScraping = async (req, res) => {
         // Log the scraping trigger
         await pool.query(
             `INSERT INTO scraped_venues (name, city, keyword) 
-             VALUES ('Scraping triggered', ?, ?)`,
+             VALUES ('Scraping triggered', $1, $2)`,
             [city, keyword]
         );
 
@@ -71,30 +71,33 @@ const getScrapedVenues = async (req, res) => {
 
         let whereClause = 'WHERE 1=1';
         const params = [];
+        let paramIndex = 1;
 
         if (city) {
-            whereClause += ' AND city = ?';
+            whereClause += ` AND city = $${paramIndex}`;
             params.push(city);
+            paramIndex++;
         }
 
         if (keyword) {
-            whereClause += ' AND keyword = ?';
+            whereClause += ` AND keyword = $${paramIndex}`;
             params.push(keyword);
+            paramIndex++;
         }
 
         // Get total count
-        const [countResult] = await pool.query(
+        const { rows: countResult } = await pool.query(
             `SELECT COUNT(*) as total FROM scraped_venues ${whereClause}`,
             params
         );
-        const total = countResult[0].total;
+        const total = parseInt(countResult[0].total);
 
         // Get venues
-        const [venues] = await pool.query(
+        const { rows: venues } = await pool.query(
             `SELECT * FROM scraped_venues 
              ${whereClause}
              ORDER BY scraped_at DESC
-             LIMIT ? OFFSET ?`,
+             LIMIT $${paramIndex} OFFSET $${paramIndex+1}`,
             [...params, parseInt(limit), offset]
         );
 
