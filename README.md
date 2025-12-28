@@ -4,8 +4,6 @@
 
 A full-stack Event Management System with automated scraping capabilities. Discover, create, and manage events like conferences, concerts, workshops, and meetups. Features include JWT authentication, favorites system, and n8n workflow integration for automated venue discovery.
 
-## 🖼️ Screenshots
-
 ### Event Discovery Dashboard
 Dark-themed dashboard with event cards, filtering by type (conferences, concerts, workshops, meetups), search functionality, and pagination.
 
@@ -15,7 +13,7 @@ Personal favorites page showing curated events with quick access to auto-scrapin
 ### Automation Panel
 Admin panel for triggering n8n workflows to scrape venue data from Google Maps and export to Google Sheets.
 
-## 🛠️ Technologies
+## �🛠️ Technologies
 
 ### Frontend
 - **HTML5** - Semantic markup
@@ -84,7 +82,7 @@ cp .env.example .env
 # DB_USER=root
 # DB_PASSWORD=your_password
 # DB_NAME=eventscraper_hub
-# JWT_SECRET=your-super-secret-key
+# JWT_SECRET=your
 
 # Run database migrations
 mysql -u root -p < database/schema.sql
@@ -166,10 +164,9 @@ Body: { city, keyword }
 Response: { success, message, sheetUrl }
 ```
 
-## 🌐 Live Demo
+## 🌐 Live App
 
-- **Frontend**: https://your-app.vercel.app
-- **Backend API**: https://your-app.vercel.app/api
+- **App**: https://gestion-dvnements-git-main-amin3aliouas-projects-6c824046.vercel.app/
 
 ### Test Credentials
 - Email: demo@example.com
@@ -259,8 +256,5 @@ vercel
 
 ## 👤 Author
 
-[Your Name]
+Abdellah Alioua
 
-## 📄 License
-
-MIT License - feel free to use this project for learning and development.
