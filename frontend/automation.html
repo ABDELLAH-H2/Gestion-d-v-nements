@@ -407,47 +407,6 @@
         </div>
     </main>
 
-    <!-- Include user menu JS for header -->
-    <script>
-        // Initialize user menu in header (matching index.html behavior)
-        document.addEventListener('DOMContentLoaded', async () => {
-            const userMenu = document.querySelector('.user-menu');
-            if (userMenu && typeof API !== 'undefined') {
-                try {
-                    const user = await API.getCurrentUser();
-                    if (user) {
-                        userMenu.innerHTML = `
-                            <div class="user-avatar">
-                                <span class="material-symbols-outlined">person</span>
-                            </div>
-                            <span class="user-name">${user.username || 'User'}</span>
-                            <button class="btn btn-ghost" onclick="logout()" style="margin-left: 0.5rem;">
-                                <span class="material-symbols-outlined">logout</span>
-                            </button>
-                        `;
-                    } else {
-                        userMenu.innerHTML = `
-                            <a href="/login.html" class="btn btn-ghost">Login</a>
-                            <a href="/register.html" class="btn btn-primary">Sign Up</a>
-                        `;
-                    }
-                } catch (e) {
-                    userMenu.innerHTML = `
-                        <a href="/login.html" class="btn btn-ghost">Login</a>
-                        <a href="/register.html" class="btn btn-primary">Sign Up</a>
-                    `;
-                }
-            }
-        });
-
-        async function logout() {
-            if (typeof API !== 'undefined' && API.logout) {
-                await API.logout();
-            }
-            window.location.href = '/login.html';
-        }
-    </script>
-
     <!-- Scripts -->
     <script src="js/api.js"></script>
     <script src="js/automation.js"></script>
