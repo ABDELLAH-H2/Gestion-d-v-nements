@@ -240,60 +240,49 @@
 </head>
 
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="brand">
-                <div class="brand-icon" style="background: linear-gradient(135deg, var(--primary), #8B5CF6);">
-                    <span class="material-symbols-outlined" style="color: white;">hub</span>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <!-- Brand -->
+            <a href="/" class="brand">
+                <div class="brand-icon">
+                    <span class="material-symbols-outlined">hub</span>
                 </div>
-                <div>
-                    <h1 style="font-size: 1.125rem; font-weight: 700; color: white; line-height: 1.2;">EventScraper</h1>
-                    <p style="font-size: 0.75rem; color: var(--text-grey);">Hub Admin</p>
-                </div>
+                <span class="brand-name">Gestion d'Événements</span>
+            </a>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search events, locations, or tags...">
+                <span class="material-symbols-outlined search-icon">search</span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="nav-links">
+                <a href="/" class="nav-link">Events</a>
+                <a href="/favorites.html" class="nav-link">My Favorites</a>
+                <a href="/automation.html" class="nav-link active">Automation</a>
+            </nav>
+
+            <div class="nav-divider"></div>
+
+            <!-- User Menu -->
+            <div class="user-menu">
+                <!-- Populated by JS based on auth state -->
             </div>
         </div>
-
-        <nav class="sidebar-nav">
-            <a href="/index.html" class="sidebar-link">
-                <span class="material-symbols-outlined">dashboard</span>
-                Dashboard
-            </a>
-            <a href="/favorites.html" class="sidebar-link">
-                <span class="material-symbols-outlined">favorite</span>
-                My Favorites
-            </a>
-            <a href="/automation.html" class="sidebar-link active">
-                <span class="material-symbols-outlined">smart_toy</span>
-                Automation
-            </a>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="flex items-center gap-3" id="sidebarUser">
-                <!-- Populated by JS -->
-            </div>
-        </div>
-    </aside>
+    </header>
 
     <!-- Main Content -->
-    <main class="main-with-sidebar" style="min-height: 100vh; overflow-y: auto;">
-        <!-- Header -->
-        <header
-            style="padding: 1.5rem 2rem; position: sticky; top: 0; z-index: 20; background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-dark);">
-            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 1.5rem;">
-                <a href="/index.html" style="color: var(--text-grey);">Admin</a>
-                <span style="color: var(--text-grey);">/</span>
-                <span style="color: white; font-weight: 500;">Automation</span>
+    <main class="container py-8">
+        <!-- Page Header -->
+        <div class="flex flex-col gap-6 mb-8">
+            <div>
+                <h1 style="font-size: 1.875rem; margin-bottom: 0.5rem;">Automation Control Center</h1>
+                <p style="color: var(--text-grey);">Manage background jobs, integrations, and data scraping
+                    workflows.</p>
             </div>
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 style="font-size: 1.875rem; margin-bottom: 0.5rem;">Automation Control Center</h1>
-                    <p style="color: var(--text-grey);">Manage background jobs, integrations, and data scraping
-                        workflows.</p>
-                </div>
-            </div>
-        </header>
+        </div>
 
         <!-- Page Content -->
         <div style="padding: 2rem; max-width: 1200px;">
@@ -417,6 +406,47 @@
             </div>
         </div>
     </main>
+
+    <!-- Include user menu JS for header -->
+    <script>
+        // Initialize user menu in header (matching index.html behavior)
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userMenu = document.querySelector('.user-menu');
+            if (userMenu && typeof API !== 'undefined') {
+                try {
+                    const user = await API.getCurrentUser();
+                    if (user) {
+                        userMenu.innerHTML = `
+                            <div class="user-avatar">
+                                <span class="material-symbols-outlined">person</span>
+                            </div>
+                            <span class="user-name">${user.username || 'User'}</span>
+                            <button class="btn btn-ghost" onclick="logout()" style="margin-left: 0.5rem;">
+                                <span class="material-symbols-outlined">logout</span>
+                            </button>
+                        `;
+                    } else {
+                        userMenu.innerHTML = `
+                            <a href="/login.html" class="btn btn-ghost">Login</a>
+                            <a href="/register.html" class="btn btn-primary">Sign Up</a>
+                        `;
+                    }
+                } catch (e) {
+                    userMenu.innerHTML = `
+                        <a href="/login.html" class="btn btn-ghost">Login</a>
+                        <a href="/register.html" class="btn btn-primary">Sign Up</a>
+                    `;
+                }
+            }
+        });
+
+        async function logout() {
+            if (typeof API !== 'undefined' && API.logout) {
+                await API.logout();
+            }
+            window.location.href = '/login.html';
+        }
+    </script>
 
     <!-- Scripts -->
     <script src="js/api.js"></script>
