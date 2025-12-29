@@ -509,6 +509,25 @@ a:hover {
     background: #DC2626;
 }
 
+.btn-google {
+    background: #ffffff;
+    color: #1f1f1f;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: var(--space-4);
+    transition: background-color 0.2s;
+}
+
+.btn-google:hover {
+    background-color: #f7f7f7;
+    border-color: #ccc;
+    color: #000;
+}
+
 .btn-icon {
     padding: var(--space-2);
     width: 40px;
@@ -1237,6 +1256,24 @@ a:hover {
 
 .auth-subtitle {
     font-size: var(--font-size-sm);
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: var(--space-4) 0;
+    color: var(--text-grey);
+}
+.auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-light);
+}
+.auth-divider span {
+    padding: 0 var(--space-2);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
 }
 
 .auth-footer {

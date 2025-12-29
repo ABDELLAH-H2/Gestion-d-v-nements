@@ -100,6 +100,14 @@ const login = async (req, res) => {
 
         const user = users[0];
 
+        // Check if user has a password (might be OAuth only)
+        if (!user.password) {
+            return res.status(401).json({
+                success: false,
+                message: 'Please log in with Google'
+            });
+        }
+
         // Check password
         const isMatch = await bcrypt.compare(password, user.password);
 
@@ -165,4 +173,20 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, logout, getMe };
+// Google Auth Callback
+const googleAuthCallback = (req, res) => {
+    try {
+        const token = generateToken(req.user.id);
+        
+        // Set secure cookie
+        res.cookie('token', token, getCookieOptions(req));
+        
+        // Redirect to frontend
+        res.redirect('/');
+    } catch (error) {
+        console.error('Google Auth Callback Error:', error);
+        res.redirect('/login.html?error=auth_failed');
+    }
+};
+
+module.exports = { register, login, logout, getMe, googleAuthCallback };

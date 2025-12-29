@@ -19,6 +19,7 @@ app.set('trust proxy', 1);
 
 // Middleware
 app.use(cookieParser());
+app.use(require('./config/passport').initialize());
 
 // CORS configuration for cross-origin cookies
 const allowedOrigins = [

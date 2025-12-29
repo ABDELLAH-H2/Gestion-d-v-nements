@@ -1,0 +1,37 @@
+# Bug Fix Report - Session Persistence & Authentication
+**Date:** December 27, 2025
+
+## 1. Issue Description
+Users were experiencing a session loss (being logged out) when navigating from the home page/login to protected pages like "My Favorites" or "Automation". This occurred despite a successful login and cookie setting.
+
+## 2. Root Cause Analysis
+Investigation revealed two concurrent issues:
+
+### A. Race Condition (Timing Issue)
+- **Problem:** Scripts like `favorites.js` and `automation.js` were executing their `isAuthenticated()` check immediately upon `DOMContentLoaded`.
+- **Reason:** The authentication check (`api.getMe()`) in `api.js` is asynchronous (it takes time to fetch from the server). The protected pages were checking for a user *before* the API had finished loading the user session, resulting in a false "not logged in" state and subsequent redirect.
+
+### B. Cross-Origin Cookie Mismatch
+- **Problem:** The API URL was hardcoded to `http://localhost:3000/api`.
+- **Reason:** If a user accessed the frontend via `http://127.0.0.1:5500` (common with Live Server), the browser treated requests to `localhost` as cross-origin.
+- **Impact:** Secure/Lax cookies set by `localhost` are often blocked or not sent when requests originate from `127.0.0.1`, causing the backend to receive no session token.
+
+## 3. Implemented Fixes
+
+### 1. Dynamic API Configuration (`frontend/js/api.js`)
+- **Fix:** Updated `API_BASE_URL` to dynamically match the current window's hostname (`localhost` or `127.0.0.1`).
+- **Fix:** Implemented an `api.init()` function that returns a Promise. This allows other scripts to wait until the initial authentication check is complete.
+
+### 2. Synchronized Initialization
+- **Files Updated:**
+  - `frontend/js/favorites.js`
+  - `frontend/js/automation.js`
+  - `frontend/js/events.js`
+  - `frontend/event-detail.html`
+- **Fix:** All entry points now `await api.init()` inside their `DOMContentLoaded` event listener.
+- **Result:** The pages now guarantee that the user session is fully loaded (or confirmed missing) *before* making any decisions to redirect or render the UI.
+
+## 4. Verification
+- **Login:** Users can log in successfully.
+- **Navigation:** Navigating to "My Favorites" or "Automation" no longer logs the user out.
+- **Persistence:** Refreshes on protected pages correctly maintain the session.

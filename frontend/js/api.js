@@ -67,6 +67,7 @@ const apiRequest = async (endpoint, options = {}) => {
 // API Methods
 const api = {
     // Auth
+    getGoogleAuthUrl: () => `${API_BASE_URL}/auth/google`,
     init: () => {
         if (!authPromise) {
             // Only fetch user if we are NOT on login/register pages
