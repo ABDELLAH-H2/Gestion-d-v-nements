@@ -145,9 +145,12 @@ const validate = (schema) => {
                 message: detail.message
             }));
 
+            // Return the first error message as the main message for better UX
+            const firstErrorMessage = errors.length > 0 ? errors[0].message : 'Validation failed';
+
             return res.status(400).json({
                 success: false,
-                message: 'Validation failed',
+                message: firstErrorMessage,
                 errors
             });
         }
