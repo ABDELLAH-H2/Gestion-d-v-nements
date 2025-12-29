@@ -2,11 +2,25 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { pool } = require('./database');
 
+// Debug: Log OAuth config (masked for security)
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const backendUrl = process.env.BACKEND_URL;
+
+console.log('=== Google OAuth Config ===');
+console.log('Client ID loaded:', googleClientId ? `${googleClientId.substring(0, 20)}...` : 'NOT SET');
+console.log('Client Secret loaded:', googleClientSecret ? `${googleClientSecret.substring(0, 10)}...` : 'NOT SET');
+console.log('Backend URL:', backendUrl || 'NOT SET (using relative callback)');
+console.log('Callback URL:', backendUrl
+  ? `${backendUrl.replace(/\/$/, '')}/api/auth/google/callback`
+  : '/api/auth/google/callback');
+console.log('===========================');
+
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.BACKEND_URL
-    ? `${process.env.BACKEND_URL.replace(/\/$/, '')}/api/auth/google/callback`
+  clientID: googleClientId,
+  clientSecret: googleClientSecret,
+  callbackURL: backendUrl
+    ? `${backendUrl.replace(/\/$/, '')}/api/auth/google/callback`
     : "/api/auth/google/callback"
 },
   async function (accessToken, refreshToken, profile, cb) {
