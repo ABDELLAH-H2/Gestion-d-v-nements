@@ -36,19 +36,47 @@ passport.use(new GoogleStrategy({
       }
 
       // Create new user
-      const newUser = await pool.query(
-        'INSERT INTO users (username, email, google_id, avatar) VALUES ($1, $2, $3, $4) RETURNING *',
-        [
-          profile.displayName,
-          profile.emails[0].value,
-          profile.id,
-          profile.photos[0]?.value
-        ]
-      );
+      let username = profile.displayName || profile.emails[0].value.split('@')[0];
+      let user;
+      let retries = 0;
+      
+      while (!user && retries < 5) {
+        try {
+          const newUser = await pool.query(
+            'INSERT INTO users (username, email, google_id, avatar) VALUES ($1, $2, $3, $4) RETURNING *',
+            [
+              username,
+              profile.emails[0].value,
+              profile.id,
+              profile.photos[0]?.value
+            ]
+          );
+          user = newUser.rows[0];
+        } catch (err) {
+            // Unique violation (Postgres code 23505)
+            if (err.code === '23505') {
+                 // If it's the email constraint, something is wrong (we checked email above)
+                 // But if it's username, we try again with a new name
+                 if (err.detail && err.detail.includes('email')) {
+                     throw err;
+                 }
+                 // Assume username conflict, generate new one
+                 username = `${(profile.displayName || profile.emails[0].value.split('@')[0]).replace(/\s+/g, '')}_${Math.floor(1000 + Math.random() * 9000)}`;
+                 retries++;
+            } else {
+                throw err;
+            }
+        }
+      }
+      
+      if (!user) {
+          throw new Error('Failed to create user after multiple retries');
+      }
 
-      return cb(null, newUser.rows[0]);
+      return cb(null, user);
 
     } catch (err) {
+      console.error('Google Auth Strategy Error:', err);
       return cb(err);
     }
   }
