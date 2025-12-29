@@ -7,9 +7,12 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME || 'postgres',
     port: process.env.DB_PORT || 5432,
+    ssl: {
+        rejectUnauthorized: false
+    },
     max: 10, // connection limit
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 5000,
 });
 
 // Test connection
