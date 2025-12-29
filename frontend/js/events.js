@@ -60,17 +60,16 @@ const updateCreateButtonVisibility = () => {
 };
 
 // Load events from API
-const loadEvents = async (append = false) => {
+const loadEvents = async () => {
     const eventsGrid = document.getElementById('eventsGrid');
     const loadingState = document.getElementById('loadingState');
     const emptyState = document.getElementById('emptyState');
-    const loadMoreContainer = document.getElementById('loadMoreContainer');
+    const paginationContainer = document.getElementById('paginationContainer');
 
-    if (!append) {
-        eventsGrid.innerHTML = '';
-        loadingState.classList.remove('hidden');
-    }
+    eventsGrid.innerHTML = '';
+    loadingState.classList.remove('hidden');
     emptyState.classList.add('hidden');
+    paginationContainer.innerHTML = '';
 
     try {
         const params = {
@@ -90,19 +89,12 @@ const loadEvents = async (append = false) => {
             const { data, pagination } = response;
             totalPages = pagination.totalPages;
 
-            if (data.length === 0 && !append) {
+            if (data.length === 0) {
                 emptyState.classList.remove('hidden');
-                loadMoreContainer.classList.add('hidden');
             } else {
-                allEvents = append ? [...allEvents, ...data] : data;
-                renderEvents(data, append);
-
-                // Show/hide load more button
-                if (currentPage >= totalPages) {
-                    loadMoreContainer.classList.add('hidden');
-                } else {
-                    loadMoreContainer.classList.remove('hidden');
-                }
+                allEvents = data;
+                renderEvents(data);
+                renderPagination();
             }
         }
     } catch (error) {
@@ -112,17 +104,75 @@ const loadEvents = async (append = false) => {
 };
 
 // Render events to grid
-const renderEvents = (events, append = false) => {
+const renderEvents = (events) => {
     const eventsGrid = document.getElementById('eventsGrid');
     const user = getUser();
 
     const eventsHTML = events.map(event => createEventCard(event, user)).join('');
+    eventsGrid.innerHTML = eventsHTML;
+};
 
-    if (append) {
-        eventsGrid.insertAdjacentHTML('beforeend', eventsHTML);
-    } else {
-        eventsGrid.innerHTML = eventsHTML;
+// Render pagination controls
+const renderPagination = () => {
+    const paginationContainer = document.getElementById('paginationContainer');
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
     }
+
+    let paginationHTML = '';
+
+    // Previous button
+    paginationHTML += `
+        <button class="pagination-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+    `;
+
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust startPage if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // First page and ellipsis
+    if (startPage > 1) {
+        paginationHTML += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+            <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+
+    // Last page and ellipsis
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+        paginationHTML += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+
+    // Next button
+    paginationHTML += `
+        <button class="pagination-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
 };
 
 // Create event card HTML
@@ -213,10 +263,13 @@ const createEventCard = (event, user) => {
     `;
 };
 
-// Load more events
-const loadMoreEvents = () => {
-    currentPage++;
-    loadEvents(true);
+// Go to specific page
+const goToPage = (page) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    currentPage = page;
+    loadEvents();
+    // Scroll to top of events grid
+    document.getElementById('eventsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 // Toggle favorite

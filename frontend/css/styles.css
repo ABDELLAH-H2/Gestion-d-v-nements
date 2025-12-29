@@ -1013,6 +1013,27 @@ a:hover {
     cursor: not-allowed;
 }
 
+.pagination-btn.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.pagination-btn .material-symbols-outlined {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.pagination-ellipsis {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-2);
+    color: var(--text-grey);
+    font-weight: 500;
+}
+
 .load-more-btn {
     display: inline-flex;
     align-items: center;
@@ -1265,11 +1286,14 @@ a:hover {
     margin: var(--space-4) 0;
     color: var(--text-grey);
 }
-.auth-divider::before, .auth-divider::after {
+
+.auth-divider::before,
+.auth-divider::after {
     content: '';
     flex: 1;
     border-bottom: 1px solid var(--border-light);
 }
+
 .auth-divider span {
     padding: 0 var(--space-2);
     font-size: var(--font-size-xs);
