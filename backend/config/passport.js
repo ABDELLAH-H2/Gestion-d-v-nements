@@ -3,11 +3,13 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { pool } = require('./database');
 
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
-  },
-  async function(accessToken, refreshToken, profile, cb) {
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.BACKEND_URL
+    ? `${process.env.BACKEND_URL.replace(/\/$/, '')}/api/auth/google/callback`
+    : "/api/auth/google/callback"
+},
+  async function (accessToken, refreshToken, profile, cb) {
     try {
       // Check if user exists with this google_id
       const existingUser = await pool.query(
@@ -39,7 +41,7 @@ passport.use(new GoogleStrategy({
       let username = profile.displayName || profile.emails[0].value.split('@')[0];
       let user;
       let retries = 0;
-      
+
       while (!user && retries < 5) {
         try {
           const newUser = await pool.query(
@@ -53,24 +55,24 @@ passport.use(new GoogleStrategy({
           );
           user = newUser.rows[0];
         } catch (err) {
-            // Unique violation (Postgres code 23505)
-            if (err.code === '23505') {
-                 // If it's the email constraint, something is wrong (we checked email above)
-                 // But if it's username, we try again with a new name
-                 if (err.detail && err.detail.includes('email')) {
-                     throw err;
-                 }
-                 // Assume username conflict, generate new one
-                 username = `${(profile.displayName || profile.emails[0].value.split('@')[0]).replace(/\s+/g, '')}_${Math.floor(1000 + Math.random() * 9000)}`;
-                 retries++;
-            } else {
-                throw err;
+          // Unique violation (Postgres code 23505)
+          if (err.code === '23505') {
+            // If it's the email constraint, something is wrong (we checked email above)
+            // But if it's username, we try again with a new name
+            if (err.detail && err.detail.includes('email')) {
+              throw err;
             }
+            // Assume username conflict, generate new one
+            username = `${(profile.displayName || profile.emails[0].value.split('@')[0]).replace(/\s+/g, '')}_${Math.floor(1000 + Math.random() * 9000)}`;
+            retries++;
+          } else {
+            throw err;
+          }
         }
       }
-      
+
       if (!user) {
-          throw new Error('Failed to create user after multiple retries');
+        throw new Error('Failed to create user after multiple retries');
       }
 
       return cb(null, user);
