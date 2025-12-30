@@ -267,30 +267,23 @@
             font-size: 18px;
         }
 
-        .load-more-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 2rem;
+        /* Loading shimmer effect */
+        .venue-card.loading {
+            animation: shimmer 1.5s infinite;
         }
 
-        .load-more-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            background: var(--surface-light);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-xl);
-            color: var(--text-white);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+        @keyframes shimmer {
+            0% {
+                opacity: 0.6;
+            }
 
-        .load-more-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px var(--primary-glow);
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
         }
 
         .empty-state {
@@ -315,25 +308,6 @@
         .empty-state p {
             color: var(--text-grey);
             margin-bottom: 1.5rem;
-        }
-
-        /* Loading shimmer effect */
-        .venue-card.loading {
-            animation: shimmer 1.5s infinite;
-        }
-
-        @keyframes shimmer {
-            0% {
-                opacity: 0.6;
-            }
-
-            50% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0.6;
-            }
         }
     </style>
 </head>
@@ -438,12 +412,9 @@
             </div>
         </div>
 
-        <!-- Load More Button -->
-        <div class="load-more-container" id="loadMoreContainer" style="display: none;">
-            <button class="load-more-btn" onclick="loadMoreVenues()" id="loadMoreBtn">
-                <span class="material-symbols-outlined">expand_more</span>
-                Load More Venues
-            </button>
+        <!-- Pagination -->
+        <div class="pagination" id="paginationContainer">
+            <!-- Pagination will be rendered by JS -->
         </div>
     </main>
 

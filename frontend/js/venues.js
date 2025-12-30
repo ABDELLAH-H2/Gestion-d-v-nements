@@ -3,7 +3,7 @@ let allVenues = [];
 let currentPage = 1;
 let totalPages = 1;
 let isLoading = false;
-const VENUES_PER_PAGE = 12;
+const VENUES_PER_PAGE = 9;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
@@ -38,18 +38,13 @@ const loadVenues = async () => {
 
         if (response.success && response.data) {
             allVenues = response.data;
-            totalPages = response.pagination?.totalPages || 1;
+            totalPages = Math.ceil(allVenues.length / VENUES_PER_PAGE);
 
             // Update stats
             updateStats();
 
-            // Render venues
-            renderVenues(allVenues.slice(0, VENUES_PER_PAGE));
-
-            // Show load more if needed
-            if (allVenues.length > VENUES_PER_PAGE) {
-                document.getElementById('loadMoreContainer').style.display = 'flex';
-            }
+            // Render venues for current page
+            renderCurrentPage();
 
             showToast(`Loaded ${allVenues.length} venues successfully!`, 'success');
         } else {
@@ -66,21 +61,86 @@ const loadVenues = async () => {
     }
 };
 
-// Load more venues
-const loadMoreVenues = () => {
-    currentPage++;
+// Render current page of venues
+const renderCurrentPage = () => {
     const start = (currentPage - 1) * VENUES_PER_PAGE;
     const end = start + VENUES_PER_PAGE;
-    const moreVenues = allVenues.slice(start, end);
+    const venuesForPage = allVenues.slice(start, end);
 
-    if (moreVenues.length > 0) {
-        appendVenues(moreVenues);
+    renderVenues(venuesForPage);
+    renderPagination();
+};
+
+// Go to specific page
+const goToPage = (page) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    currentPage = page;
+    renderCurrentPage();
+    // Scroll to top of venues grid
+    document.getElementById('venuesGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// Render pagination controls (matching homepage style)
+const renderPagination = () => {
+    const paginationContainer = document.getElementById('paginationContainer');
+
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
     }
 
-    // Hide load more if no more venues
-    if (end >= allVenues.length) {
-        document.getElementById('loadMoreContainer').style.display = 'none';
+    let paginationHTML = '';
+
+    // Previous button
+    paginationHTML += `
+        <button class="pagination-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+    `;
+
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust startPage if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
+
+    // First page and ellipsis
+    if (startPage > 1) {
+        paginationHTML += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+            <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+
+    // Last page and ellipsis
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+        paginationHTML += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+
+    // Next button
+    paginationHTML += `
+        <button class="pagination-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
 };
 
 // Update stats display
@@ -131,13 +191,6 @@ const renderVenues = (venues) => {
     }
 
     grid.innerHTML = venues.map(venue => createVenueCard(venue)).join('');
-};
-
-// Append more venues to grid
-const appendVenues = (venues) => {
-    const grid = document.getElementById('venuesGrid');
-    const newCards = venues.map(venue => createVenueCard(venue)).join('');
-    grid.insertAdjacentHTML('beforeend', newCards);
 };
 
 // Create venue card HTML
@@ -207,10 +260,10 @@ const filterVenues = () => {
     const searchTerm = document.getElementById('venueSearch').value.toLowerCase().trim();
 
     if (!searchTerm) {
-        renderVenues(allVenues.slice(0, currentPage * VENUES_PER_PAGE));
-        if (allVenues.length > currentPage * VENUES_PER_PAGE) {
-            document.getElementById('loadMoreContainer').style.display = 'flex';
-        }
+        // Reset to show all venues with pagination
+        totalPages = Math.ceil(allVenues.length / VENUES_PER_PAGE);
+        currentPage = 1;
+        renderCurrentPage();
         return;
     }
 
@@ -220,7 +273,7 @@ const filterVenues = () => {
     );
 
     renderVenues(filtered);
-    document.getElementById('loadMoreContainer').style.display = 'none';
+    document.getElementById('paginationContainer').innerHTML = '';
 };
 
 // Show empty state
@@ -237,7 +290,7 @@ const showEmptyState = () => {
             </a>
         </div>
     `;
-    document.getElementById('loadMoreContainer').style.display = 'none';
+    document.getElementById('paginationContainer').innerHTML = '';
 };
 
 // Helper: Truncate URL for display
@@ -260,4 +313,4 @@ const escapeHtml = (text) => {
 
 // Make functions globally available
 window.loadVenues = loadVenues;
-window.loadMoreVenues = loadMoreVenues;
+window.goToPage = goToPage;
