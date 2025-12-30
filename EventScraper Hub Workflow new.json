@@ -1,0 +1,1673 @@
+{
+  "name": "EventScraper Hub Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/scrape",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        160
+      ],
+      "id": "d757cd97-c435-4cf6-b133-8812a5eefeca",
+      "webhookId": "8ccb95fa-3fee-402c-9a8e-c00d15eaa436"
+    },
+    {
+      "parameters": {
+        "authentication": "queryAuth",
+        "url": "https://serpapi.com/search.json",
+        "options": {},
+        "queryParametersUi": {
+          "parameter": [
+            {
+              "name": "engine",
+              "value": "google_maps"
+            },
+            {
+              "name": "q",
+              "value": "= {{$node[\"Webhook\"].json[\"body\"][\"keyword\"]}} in {{$node[\"Webhook\"].json[\"body\"][\"city\"]}}"
+            },
+            {
+              "name": "type",
+              "value": "search"
+            }
+          ]
+        }
+      },
+      "name": "SerpAPI Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -160
+      ],
+      "id": "991411d2-dc46-4ef7-bb93-ca73cb676143",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "lljXEw88ESx2Vx3O",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "sheetId": "17r8ajS1rf37OUjl2meAkKmkqObcuf1q992G6Bn64DV8",
+        "range": "A:E",
+        "options": {}
+      },
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        976,
+        224
+      ],
+      "id": "d2162636-fc7b-4a77-b85e-16c2905f495e",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gDj8LfhzfW7LR7UA",
+          "name": "Google Sheets account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Scraping completed\",\n  \"sheetUrl\": \"https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID\"\n}",
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        944,
+        -208
+      ],
+      "id": "526ec2d7-d337-406b-bded-1cf90035a66b"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "local_results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        544,
+        32
+      ],
+      "id": "c6059ab6-d35c-418c-8221-c0943c528690",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f9bb8fd1-5805-46a4-a3c0-c64262f4f735",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "b170ce8e-b0c4-4de1-a349-27ca057f7cdf",
+              "name": "address",
+              "value": "={{ $json.address }}",
+              "type": "string"
+            },
+            {
+              "id": "fcfa8d90-4b46-4b45-9528-9a6c4a19283f",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "ef14f1e2-f52f-473e-a368-fa8143909744",
+              "name": "website",
+              "value": "={{ $json.website }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        0
+      ],
+      "id": "50f7b616-905b-4fd7-9909-2fdf9f1291b7",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "tableId": "scraped_venues",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "address",
+              "fieldValue": "={{ $json.address || null }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $json.phone || null }}"
+            },
+            {
+              "fieldId": "website",
+              "fieldValue": "={{ $json.website || null }}"
+            },
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $json.title || null }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        944,
+        0
+      ],
+      "id": "ab848fe4-40a1-4155-aebf-b5c4581f6366",
+      "name": "Create a row1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "4mXGxIlSt1nyRy4J",
+          "name": "Supabase account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Split Out": [
+      {
+        "json": {
+          "position": 1,
+          "title": "Pavillon Maya",
+          "place_id": "ChIJsVZdZBrvrw0RK0wS0cLZOJs",
+          "data_id": "0xdafef1a645d56b1:0x9b38d9c2d1124c2b",
+          "data_cid": "11184929105329146923",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafef1a645d56b1%3A0x9b38d9c2d1124c2b&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafef1a645d56b1%3A0x9b38d9c2d1124c2b&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.5722392,
+            "longitude": -7.9809081
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJsVZdZBrvrw0RK0wS0cLZOJs",
+          "provider_id": "/g/11fk3wzl4l",
+          "rating": 4.7,
+          "reviews": 124,
+          "type": "Banquet hall",
+          "types": [
+            "Banquet hall"
+          ],
+          "type_id": "banquet_hall",
+          "type_ids": [
+            "banquet_hall"
+          ],
+          "address": "3,5 Km, route de l'Ourika, Marrakech 40000, Morocco",
+          "open_state": "Open · Closes 7 PM",
+          "hours": "Open · Closes 7 PM",
+          "operating_hours": {
+            "tuesday": "9 AM–7 PM",
+            "wednesday": "9 AM–7 PM",
+            "thursday": "9 AM–7 PM",
+            "friday": "9 AM–7 PM",
+            "saturday": "9 AM–7 PM",
+            "sunday": "Closed",
+            "monday": "9 AM–7 PM"
+          },
+          "phone": "+212 662-031666",
+          "website": "https://www.pavillonmaya.com/",
+          "extensions": [
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            },
+            {
+              "children": [
+                "Has changing table(s)"
+              ]
+            }
+          ],
+          "user_review": "\"The place is modern, clean and management is so understanding\"",
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipOWscrg_Xz3MjgB3G9RhWc-Coj7d_i7iRj4d77_=w138-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/Nsell3icuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFngH16cXJQeH1Fl7JuV7mTsbhmUEZ6s65yfZZ4Sn2meGZRlkmJuHm9bbmhsoZthaaSbrZuXDwCuHCEr"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 2,
+          "title": "Ceremonia Event - Wedding Planner Marrakech",
+          "place_id": "ChIJDW9TlBrvrw0Rfbq75IwfLHc",
+          "data_id": "0xdafef1a94536f0d:0x772c1f8ce4bbba7d",
+          "data_cid": "8587273279482083965",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafef1a94536f0d%3A0x772c1f8ce4bbba7d&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafef1a94536f0d%3A0x772c1f8ce4bbba7d&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.577796399999997,
+            "longitude": -8.0170111
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJDW9TlBrvrw0Rfbq75IwfLHc",
+          "provider_id": "/g/11h1kqw317",
+          "rating": 4.8,
+          "reviews": 186,
+          "type": "Wedding planner",
+          "types": [
+            "Wedding planner",
+            "Banquet hall",
+            "Caterer",
+            "Event management company",
+            "Event venue",
+            "Function room facility",
+            "Wedding photographer",
+            "Wedding service",
+            "Wedding venue"
+          ],
+          "type_id": "wedding_planner",
+          "type_ids": [
+            "wedding_planner",
+            "banquet_hall",
+            "catering_service",
+            "event_management_company",
+            "event_venue",
+            "function_room_facility",
+            "wedding_photographer",
+            "wedding_service",
+            "wedding_venue"
+          ],
+          "address": "Ceremonia palace Chrifia, 5.5 km route amizmiz, Marrakech 40000, Morocco",
+          "open_state": "Open 24 hours",
+          "hours": "Open 24 hours",
+          "operating_hours": {
+            "tuesday": "Open 24 hours",
+            "wednesday": "Open 24 hours",
+            "thursday": "Open 24 hours",
+            "friday": "Open 24 hours",
+            "saturday": "Open 24 hours",
+            "sunday": "Open 24 hours",
+            "monday": "Open 24 hours"
+          },
+          "phone": "+212 661-195636",
+          "website": "http://www.ceremoniaevent.com/",
+          "extensions": [
+            {
+              "service_options": [
+                "Online appointments",
+                "Onsite services"
+              ]
+            },
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom"
+              ]
+            },
+            {
+              "planning": [
+                "Appointment required"
+              ]
+            }
+          ],
+          "service_options": {
+            "online_appointments": true,
+            "onsite_services": true
+          },
+          "user_review": "\"I had my wedding ceremony here couple weeks ago and it was MAGICAL !!\"",
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipOCI_1WMPeBwu3lMUdqZYaiWerRNtXcXMCxykog=w138-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/kHk043icuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFng7-wZbxjuG5DqVF5qnOMbmlIYFZmYGZ5aFORXEpEc4etcUZmdn25bbmhsoZthaaSbrZuXDwC48iIa"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 3,
+          "title": "Salle Rayan",
+          "place_id": "ChIJhxYKYJnprw0RGuyMmcM5-Vs",
+          "data_id": "0xdafe999600a1687:0x5bf939c3998cec1a",
+          "data_cid": "6627391838909951002",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafe999600a1687%3A0x5bf939c3998cec1a&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafe999600a1687%3A0x5bf939c3998cec1a&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.626731999999997,
+            "longitude": -8.0478279
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJhxYKYJnprw0RGuyMmcM5-Vs",
+          "provider_id": "/g/11pkht02m7",
+          "rating": 4.8,
+          "reviews": 152,
+          "type": "Festival hall",
+          "types": [
+            "Festival hall",
+            "Caterer",
+            "Event planner",
+            "Wedding venue"
+          ],
+          "type_id": "festival_hall",
+          "type_ids": [
+            "festival_hall",
+            "catering_service",
+            "event_planner",
+            "wedding_venue"
+          ],
+          "address": "a côté de Coca-Cola, Marrakech 40000, Morocco",
+          "open_state": "Open · Closes 11:30 PM",
+          "hours": "Open · Closes 11:30 PM",
+          "operating_hours": {
+            "tuesday": "7 AM–11:30 PM",
+            "wednesday": "7 AM–11:30 PM",
+            "thursday": "7 AM–11:30 PM",
+            "friday": "7 AM–11:30 PM",
+            "saturday": "7 AM–11:30 PM",
+            "sunday": "7 AM–11:30 PM",
+            "monday": "7 AM–11:30 PM"
+          },
+          "phone": "+212 606-486440",
+          "website": "http://sallerayan.ma/",
+          "extensions": [
+            {
+              "service_options": [
+                "Onsite services"
+              ]
+            },
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible seating"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            },
+            {
+              "children": [
+                "Good for kids birthday"
+              ]
+            }
+          ],
+          "service_options": {
+            "onsite_services": true
+          },
+          "user_review": "\"The best salle ever\nService toooop ❤️🤍🤍❤️\"",
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipOQRLJ3mbF48aNd8NLQwsyVWNK_NEjx34TBflJJ=w136-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/tNDSwnicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFngHxjk42Wcm-RmYpHol2Lh5xNYXlwZFu7nHe_nmlVhbBLilJbj5WVbbmhsppthaaSbrZuXDwCW3iDO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 4,
+          "title": "La Pergola & Le bistro Arabe",
+          "place_id": "ChIJ3Ws8F2fvrw0RY-5dCY7BKUA",
+          "data_id": "0xdafef67173c6bdd:0x4029c18e095dee63",
+          "data_cid": "4623439308259192419",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafef67173c6bdd%3A0x4029c18e095dee63&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafef67173c6bdd%3A0x4029c18e095dee63&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.6244771,
+            "longitude": -7.9870135
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ3Ws8F2fvrw0RY-5dCY7BKUA",
+          "provider_id": "/g/11g_x69kh4",
+          "rating": 4.8,
+          "reviews": 32720,
+          "price": "$$",
+          "type": "Restaurant",
+          "types": [
+            "Restaurant",
+            "Bar",
+            "Cocktail bar",
+            "Hamburger restaurant",
+            "Jazz club",
+            "Live music bar",
+            "Lounge",
+            "Moroccan restaurant",
+            "Tapas bar",
+            "Tapas restaurant"
+          ],
+          "type_id": "restaurant",
+          "type_ids": [
+            "restaurant",
+            "bar",
+            "cocktail_bar",
+            "hamburger_restaurant",
+            "jazz_club",
+            "live_music_bar",
+            "lounge",
+            "moroccan_restaurant",
+            "tapas_bar",
+            "tapas_restaurant"
+          ],
+          "address": "7, 8 Riad Zitoun Lakdim, Marrakech 40000, Morocco",
+          "open_state": "Closed · Opens 12 PM",
+          "hours": "Closed · Opens 12 PM",
+          "operating_hours": {
+            "tuesday": "12–11 PM",
+            "wednesday": "12–11 PM",
+            "thursday": "12–11 PM",
+            "friday": "12–11 PM",
+            "saturday": "12–11 PM",
+            "sunday": "12–11 PM",
+            "monday": "12–11 PM"
+          },
+          "phone": "+212 5244-29646",
+          "website": "https://www.riad-monceau.com/la-pergola/",
+          "extensions": [
+            {
+              "service_options": [
+                "Outdoor seating",
+                "Onsite services",
+                "Takeout",
+                "Dine-in"
+              ]
+            },
+            {
+              "highlights": [
+                "Great beer selection",
+                "Great cocktails",
+                "Great coffee",
+                "Great dessert",
+                "Great tea selection",
+                "Great wine list",
+                "Live music",
+                "Rooftop seating"
+              ]
+            },
+            {
+              "popular_for": [
+                "Lunch",
+                "Dinner",
+                "Solo dining"
+              ]
+            },
+            {
+              "offerings": [
+                "Alcohol",
+                "Beer",
+                "Cocktails",
+                "Coffee",
+                "Halal food",
+                "Happy hour drinks",
+                "Happy hour food",
+                "Hard liquor",
+                "Late-night food",
+                "Private dining room",
+                "Quick bite",
+                "Small plates",
+                "Vegan options",
+                "Vegetarian options",
+                "Wine"
+              ]
+            },
+            {
+              "dining_options": [
+                "Brunch",
+                "Lunch",
+                "Dinner",
+                "Catering",
+                "Counter service",
+                "Dessert",
+                "Seating",
+                "Table service"
+              ]
+            },
+            {
+              "amenities": [
+                "Bar onsite",
+                "Gender-neutral restroom",
+                "Restroom",
+                "Wi-Fi",
+                "Free Wi-Fi"
+              ]
+            },
+            {
+              "atmosphere": [
+                "Casual",
+                "Cozy",
+                "Romantic",
+                "Trendy",
+                "Upscale"
+              ]
+            },
+            {
+              "crowd": [
+                "Family-friendly",
+                "Groups",
+                "Tourists"
+              ]
+            },
+            {
+              "planning": [
+                "Brunch reservations recommended",
+                "Lunch reservations recommended",
+                "Reservations required",
+                "Dinner reservations recommended",
+                "Accepts reservations",
+                "Usually a wait"
+              ]
+            },
+            {
+              "payments": [
+                "Credit cards",
+                "Debit cards",
+                "NFC mobile payments"
+              ]
+            },
+            {
+              "children": [
+                "High chairs"
+              ]
+            },
+            {
+              "parking": [
+                "Usually difficult to find a space"
+              ]
+            }
+          ],
+          "unsupported_extensions": [
+            {
+              "service_options": [
+                "Delivery"
+              ]
+            },
+            {
+              "accessibility": [
+                "Assistive hearing loop",
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible seating"
+              ]
+            }
+          ],
+          "service_options": {
+            "dine_in": true,
+            "takeout": true,
+            "delivery": false
+          },
+          "user_review": "\"An amazing venue with a few floors looking out onto a beautiful courtyard.\"",
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSwpQhMMFBWXiO7Xmy75qEi7AskD1HwJB5zLWULqfhtiuUThfsPgtlOgTcjAFxHEa3GMDY3R-nKEtVfqYJetUzVCqU7gNTesRUkCgw8v44Aq7ufBekKERDo5pOA6ClpB7S5jPeMh_YY6lxs=w80-h106-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/usG0NnicBcFbjoIwFADQFRUwCDUm81FeGhVRpCpfkwkpLVJpO7eI4xpnA-7Gc97_wloNS9eVwne4UlyyEdhvowbLBus06u5yDagBBC5ZeZ08Tfoo8jyLLteuwNf7Hw5M2mECfTJbT5soeO0udGdaYbuRVqKFA7ey4FVzI9lznf74qzyp_RIN29SeW1NvmKWvc2wo5vuKQUn7mE-Lx3xODB7biPXbtExUoAsSxlJH-BTcDiwX33Udyid8TQsPiZkXoh4N6gMMlUeP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 5,
+          "title": "marrakech wedding venues",
+          "place_id": "ChIJ3QEFutvvrw0RW6y0b5T1hTk",
+          "data_id": "0xdafefdbba0501dd:0x3985f5946fb4ac5b",
+          "data_cid": "4144989049942486107",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafefdbba0501dd%3A0x3985f5946fb4ac5b&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafefdbba0501dd%3A0x3985f5946fb4ac5b&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.6338413,
+            "longitude": -7.9853016
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ3QEFutvvrw0RW6y0b5T1hTk",
+          "provider_id": "/g/11jfjsvfl5",
+          "rating": 5,
+          "reviews": 1,
+          "type": "Wedding venue",
+          "types": [
+            "Wedding venue"
+          ],
+          "type_id": "wedding_venue",
+          "type_ids": [
+            "wedding_venue"
+          ],
+          "address": "Marrakesh 40000, Morocco",
+          "open_state": "Open · Closes 6 PM",
+          "hours": "Open · Closes 6 PM",
+          "operating_hours": {
+            "tuesday": "9 AM–6 PM",
+            "wednesday": "9 AM–6 PM",
+            "thursday": "9 AM–6 PM",
+            "friday": "9 AM–12 AM",
+            "saturday": "12–6 AM, 9 AM–6 PM",
+            "sunday": "Closed",
+            "monday": "9 AM–6 PM"
+          },
+          "phone": "+212 691-070431",
+          "extensions": [
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            }
+          ],
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipNAt8kb4ZRCyUQDTzxeiAlaXTfERyy597x-_bS6=w122-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/BczCyXicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFng51hikZ1kEhXkXBka6BJSVZGa6ZiTGBGS5hpUWWlqaV6hG58UbGZbbmhkpJthaaSbrZuXDwCvJSFW"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 6,
+          "title": "The Studio Events",
+          "place_id": "ChIJmQdt4bbvrw0Re-KWWRww3Gw",
+          "data_id": "0xdafefb6e16d0799:0x6cdc301c5996e27b",
+          "data_cid": "7844197549292839547",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafefb6e16d0799%3A0x6cdc301c5996e27b&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafefb6e16d0799%3A0x6cdc301c5996e27b&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.634227099999997,
+            "longitude": -8.0132625
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJmQdt4bbvrw0Re-KWWRww3Gw",
+          "provider_id": "/g/11fq_z09mv",
+          "rating": 5,
+          "reviews": 15,
+          "type": "Event management company",
+          "types": [
+            "Event management company"
+          ],
+          "type_id": "event_management_company",
+          "type_ids": [
+            "event_management_company"
+          ],
+          "address": "5 Rue de la Liberté, Marrakesh 40000, Morocco",
+          "open_state": "Open · Closes 7 PM",
+          "hours": "Open · Closes 7 PM",
+          "operating_hours": {
+            "tuesday": "9 AM–7 PM",
+            "wednesday": "9 AM–7 PM",
+            "thursday": "9 AM–7 PM",
+            "friday": "9 AM–7 PM",
+            "saturday": "9 AM–1 PM",
+            "sunday": "Closed",
+            "monday": "9 AM–7 PM"
+          },
+          "phone": "+212 656-661212",
+          "website": "http://studio-events.com/",
+          "user_review": "\"She helped us find our dream venue and boy when I say a dream!\"",
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSyN4NmAVGrLYaxeJa5Vt24xlyajK3tm0DCNSft-xPUGFoU4QJDgCHQ1uD9aqB72NmUJFQYas8uoLTqXg3bWhdEw5_kOYvOX2SFDkUPl3q7pbKFReiCB6sIayWZ2pH76fG00SahD=w138-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/k2l2SXicBcHRFoEwAADQL5qyRTjHA00RJ5KQF2cyG61WtlQf6CP8jXt_X651qSaGITjqMSmZoLWi71QWmha6l8rcYKUCqQLKmHnmU0RdYAX57Oi9NwlpqU8GRw2tVnTktUY6N7ETRA8N2l3suTK2Qh8zZxn2azwm1dyGQR77bpgQNarl5lCdGbqd-H3RDK7ZNvlszzBycRbvBKrs8rZ29_TpzIdqRbrTBZZLe_jwTDMiHE-bPhoBPoYgA4X8A6SOQ5Q"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 7,
+          "title": "Golden White Palace",
+          "place_id": "ChIJw2HFB9Hzrw0Rg-OCUSPd1yw",
+          "data_id": "0xdaff3d107c561c3:0x2cd7dd235182e383",
+          "data_cid": "3231294401422746499",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdaff3d107c561c3%3A0x2cd7dd235182e383&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdaff3d107c561c3%3A0x2cd7dd235182e383&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.702859699999998,
+            "longitude": -7.993236
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJw2HFB9Hzrw0Rg-OCUSPd1yw",
+          "provider_id": "/g/11ssfhv9zx",
+          "rating": 4.6,
+          "reviews": 84,
+          "type": "Wedding venue",
+          "types": [
+            "Wedding venue"
+          ],
+          "type_id": "wedding_venue",
+          "type_ids": [
+            "wedding_venue"
+          ],
+          "address": "Palmeraie Est, Ouahat sidi brahim, Marrakesh 40063, Morocco",
+          "open_state": "Open · Closes 6 PM",
+          "hours": "Open · Closes 6 PM",
+          "operating_hours": {
+            "tuesday": "10 AM–6 PM",
+            "wednesday": "10 AM–6 PM",
+            "thursday": "10 AM–6 PM",
+            "friday": "10 AM–6 PM",
+            "saturday": "10 AM–6 PM",
+            "sunday": "10 AM–6 PM",
+            "monday": "10 AM–6 PM"
+          },
+          "phone": "+212 661-340349",
+          "website": "https://www.instagram.com/goldenwhitepalace/",
+          "extensions": [
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            }
+          ],
+          "user_review": "\"The ambiance far exceeded my expectations and was truly magnificent.\"",
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSz7QtC1H37CkWbNWz-sL-foo2DbR9BXJdtyI4PJF3hm8nsBqEN_5ELBguw5Xb-N1AZWrU00rdyC33L8LQfF8PvhGA31s8I0V7y0c_ujOiTBxFCBHzuoBtwhDq2MtuvOaqDniTEngw=w137-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/e3YJjHicBcFZEoIgAADQE5EoNWozfYhLy5jt6fTjpBmYBimQ6QU7Q7fpvd-XSvkSU02rKRoRzkldKFG0OWeyYHKU86dGXgLkAgjNmcOyPgzmTrr6ApluFWdRPAARgjvnhpftbZysbrJfjrerANGnxQRu_Cid-CEmqpskGYh05xK3JwjbW-8iFFrh7h5Y2zedO0gX1hKezR7mqXpsyiP-BC5eDIpj2VGvMdZSvTfXxmPl0Wekm3U6MgG1DVABxv-7GEQ8"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 8,
+          "title": "Al Majliss",
+          "place_id": "ChIJ8SABs8vvrw0R9oB_GBoA8WE",
+          "data_id": "0xdafefcbb30120f1:0x61f1001a187f80f6",
+          "data_cid": "7057422203146436854",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafefcbb30120f1%3A0x61f1001a187f80f6&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafefcbb30120f1%3A0x61f1001a187f80f6&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.620928399999997,
+            "longitude": -8.006988699999999
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ8SABs8vvrw0R9oB_GBoA8WE",
+          "provider_id": "/g/11fkmx271r",
+          "rating": 4.8,
+          "reviews": 6,
+          "type": "Conference center",
+          "types": [
+            "Conference center",
+            "Banquet hall",
+            "Concert hall",
+            "Festival hall",
+            "Wedding venue"
+          ],
+          "type_id": "conference_center",
+          "type_ids": [
+            "conference_center",
+            "banquet_hall",
+            "concert_hall",
+            "festival_hall",
+            "wedding_venue"
+          ],
+          "address": "Hotel El Andalous Lounges & Spa, Av. du Président Kennedy, Marrakesh 40020, Morocco",
+          "open_state": "Open 24 hours",
+          "hours": "Open 24 hours",
+          "operating_hours": {
+            "tuesday": "Open 24 hours",
+            "wednesday": "Open 24 hours",
+            "thursday": "Open 24 hours",
+            "friday": "Open 24 hours",
+            "saturday": "Open 24 hours",
+            "sunday": "Open 24 hours",
+            "monday": "Open 24 hours"
+          },
+          "phone": "+212 5244-48226",
+          "website": "http://www.elandalousevents.com/",
+          "extensions": [
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            }
+          ],
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipPsRqYxrWbNIqsc1fgvF_Nc5WS7ootGPp-dJUbL=w138-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/DUtGtXicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFkQUBxUGFlRFJ7k51lYnGyYll7mFu-XbBoebJ6fX-IeUKCb4hWa5GNbbmhsoZthaaSbrZuXDwDIsyH1"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 9,
+          "title": "Villa Laarissa",
+          "place_id": "ChIJl1Mk4Rzvrw0RTSFOVdtfiZU",
+          "data_id": "0xdafef1ce1245397:0x95895fdb554e214d",
+          "data_cid": "10775248979094282573",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafef1ce1245397%3A0x95895fdb554e214d&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafef1ce1245397%3A0x95895fdb554e214d&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.600903199999998,
+            "longitude": -8.0147733
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJl1Mk4Rzvrw0RTSFOVdtfiZU",
+          "provider_id": "/g/11clvd52bj",
+          "rating": 4.3,
+          "reviews": 79,
+          "type": "Event venue",
+          "types": [
+            "Event venue"
+          ],
+          "type_id": "event_venue",
+          "type_ids": [
+            "event_venue"
+          ],
+          "address": "En face du Golf Mongomerie l'aéroport, 7 Route de, Marrakesh 40160, Morocco",
+          "open_state": "Open · Closes 5 AM Wed",
+          "hours": "Open · Closes 5 AM Wed",
+          "operating_hours": {
+            "tuesday": "9 AM–5 AM",
+            "wednesday": "9 AM–5 AM",
+            "thursday": "9 AM–5 AM",
+            "friday": "9 AM–5 AM",
+            "saturday": "9 AM–5 AM",
+            "sunday": "9 AM–5 AM",
+            "monday": "9 AM–5 AM"
+          },
+          "phone": "+212 657-400011",
+          "website": "http://villa-laarissa.ma/",
+          "extensions": [
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            },
+            {
+              "children": [
+                "Good for kids birthday"
+              ]
+            }
+          ],
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipO0EV3TWlgYJf88fZ3AhLInTawFxkP6nlAyBaY2=w138-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/-grmZXicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFngb-AaZhwSnpMe6ZVmYZEWZeyY4eOZF5JY7laRHWCWl-NY6ZQYaWRbbmhsoZthaaSbrZuXDwCZqSD-"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 10,
+          "title": "Animation DJ Marrakech – Soirées, Nuits & Événements",
+          "place_id": "ChIJVXZZ1mrprw0RiUHndmiiWn4",
+          "data_id": "0xdafe96ad6597655:0x7e5aa26876e74189",
+          "data_cid": "9104768166238044553",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafe96ad6597655%3A0x7e5aa26876e74189&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafe96ad6597655%3A0x7e5aa26876e74189&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.5963465,
+            "longitude": -8.0483272
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJVXZZ1mrprw0RiUHndmiiWn4",
+          "provider_id": "/g/11h8rvf2tl",
+          "rating": 4.9,
+          "reviews": 46,
+          "type": "Event planner",
+          "types": [
+            "Event planner",
+            "Bus company",
+            "Bus ticket agency",
+            "Children's party buffet",
+            "Concert hall",
+            "DJ service",
+            "Party equipment rental service",
+            "School bus service",
+            "Wedding buffet"
+          ],
+          "type_id": "event_planner",
+          "type_ids": [
+            "event_planner",
+            "bus_company",
+            "bus_ticket_agency",
+            "childrens_party_buffet",
+            "concert_hall",
+            "dj",
+            "party_equipment_rental_service",
+            "school_bus_service",
+            "wedding_buffet"
+          ],
+          "address": "40000, Marrakech 40000, Maroc Lot maatallah no 1140 asekjour, Marrakech, Morocco",
+          "open_state": "Open 24 hours",
+          "hours": "Open 24 hours",
+          "operating_hours": {
+            "tuesday": "Open 24 hours",
+            "wednesday": "Open 24 hours",
+            "thursday": "Open 24 hours",
+            "friday": "Open 24 hours",
+            "saturday": "Open 24 hours",
+            "sunday": "Open 24 hours",
+            "monday": "Open 24 hours"
+          },
+          "phone": "+212 611-195516",
+          "website": "https://animationmarrakech.blogspot.com/",
+          "extensions": [
+            {
+              "service_options": [
+                "Online appointments",
+                "Onsite services"
+              ]
+            },
+            {
+              "accessibility": [
+                "Assistive hearing loop",
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom",
+                "Wheelchair accessible seating"
+              ]
+            },
+            {
+              "amenities": [
+                "Gender-neutral restroom"
+              ]
+            },
+            {
+              "planning": [
+                "Appointment required"
+              ]
+            },
+            {
+              "parking": [
+                "Free parking garage",
+                "Free parking lot",
+                "Free street parking",
+                "On-site parking"
+              ]
+            }
+          ],
+          "service_options": {
+            "online_appointments": true,
+            "onsite_services": true
+          },
+          "user_review": "\"Their DJ and music concerts are top-notch, and I was thoroughly impressed.\"",
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipPvW2100_w7gnGmJlce6SLc_D-MjfFROmiBnx8w=w80-h106-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/cHSxRnicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFkQUBZuZGhgEF9unp7nnuuVk5xqFuyTHO-i65uV5hbkn5vplFdhUW5bbmGgm2FoYKabrZuXDwCebSEj"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 11,
+          "title": "Palais des Congrès",
+          "place_id": "ChIJZ7eLge3urw0RSKVpGVstIp4",
+          "data_id": "0xdafeeed818bb767:0x9e222d5b1969a548",
+          "data_cid": "11394719876492404040",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafeeed818bb767%3A0x9e222d5b1969a548&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafeeed818bb767%3A0x9e222d5b1969a548&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.624632,
+            "longitude": -8.013463999999999
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJZ7eLge3urw0RSKVpGVstIp4",
+          "provider_id": "/g/1td7_fq8",
+          "rating": 4.4,
+          "reviews": 1331,
+          "type": "Convention center",
+          "types": [
+            "Convention center",
+            "Event venue"
+          ],
+          "type_id": "convention_center",
+          "type_ids": [
+            "convention_center",
+            "event_venue"
+          ],
+          "address": "JXGP+3MJ, Bd Mohamed VI, Marrakesh 40000, Morocco",
+          "open_state": "Open · Closes 11:30 PM",
+          "hours": "Open · Closes 11:30 PM",
+          "operating_hours": {
+            "tuesday": "12 AM–11:30 PM",
+            "wednesday": "12 AM–11:30 PM",
+            "thursday": "12 AM–11:30 PM",
+            "friday": "12 AM–11:30 PM",
+            "saturday": "12 AM–11:30 PM",
+            "sunday": "12 AM–11:30 PM",
+            "monday": "12 AM–11:30 PM"
+          },
+          "phone": "+212 5243-39100",
+          "website": "https://palaisdescongres.movenpick.com/?utm_source=Google&utm_medium=Local&utm_campaign=Glocal+pdc",
+          "extensions": [
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            },
+            {
+              "payments": [
+                "Credit cards",
+                "Debit cards",
+                "NFC mobile payments"
+              ]
+            }
+          ],
+          "user_review": "\"I highly recommend this place for large conventions and conferences.\"",
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipPWIr8B8x9UaZeOscLYEgOnB2eNouzKm-3EUtUd=w137-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/J14VTXicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFkQEO5ZZOFkUWEZmhiV6l-c7BPpmu6f52SU6pdfWuWdq2vsGloSmmJbbmhsrpthaaSbrZuXDwCnuSFO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 12,
+          "title": "Palais Soleiman Palace",
+          "place_id": "ChIJlzSUdXrurw0RqNauSF7vm2s",
+          "data_id": "0xdafee7a75943497:0x6b9bef5e48aed6a8",
+          "data_cid": "7754054371673822888",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafee7a75943497%3A0x6b9bef5e48aed6a8&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafee7a75943497%3A0x6b9bef5e48aed6a8&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.643610499999998,
+            "longitude": -7.9922767
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJlzSUdXrurw0RqNauSF7vm2s",
+          "provider_id": "/g/11b6llnz3y",
+          "rating": 4.5,
+          "reviews": 369,
+          "price": "$$$",
+          "type": "Event venue",
+          "types": [
+            "Event venue"
+          ],
+          "type_id": "event_venue",
+          "type_ids": [
+            "event_venue"
+          ],
+          "address": "Kaa machraa, Dar Layadi, N8, Marrakesh 40000, Morocco",
+          "phone": "+212 5243-78962",
+          "website": "http://www.palais-soleiman.com/",
+          "extensions": [
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            },
+            {
+              "payments": [
+                "Credit cards",
+                "Debit cards"
+              ]
+            }
+          ],
+          "service_options": {
+            "dine_in": true,
+            "delivery": false
+          },
+          "user_review": "\"Great place for a party... Lovely luxurious interiors.\"",
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSw16XnFvsytkVcKFpH3idcoitVoHfbJjB8hEsJEWg2FpCTVRSHFNUf2hyTow2tjrEhCXieITIUr2LpWSQEyuPB62PJQR_yvLX1Ogv__PVDeRkjTBkiEVEv-x5tEC9UlcEFFWJKc=w137-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/6we8HnicBcHbboIwAADQL6pIiThN9jBYKxfjkEvhjWS1tgVGG1pBPtCP2N94zv9LWKvN0XEG4W24UnxgD8MmqkbLRruh6s_h2gBqgHG-Tls5FIvrNyOezWp7QlOsI0_eqJKWqOj-m3TBh0AmQTWHWIclyYsIX6o7FGupFmi7CYmwkSwu42qCZ10XV7Q-ssCHWXLN23U-N-4Pn9s2I98s77sy6CUiaAbPnUXhoRoowrhOUvq5uN4eiAMEPRjVGz3xRTc"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 13,
+          "title": "L Mansion Marrakech Palace & Event",
+          "place_id": "ChIJHTczYbvwrw0R6-hEiBcaf_E",
+          "data_id": "0xdaff0bb6133371d:0xf17f1a178844e8eb",
+          "data_cid": "17401656173555673323",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdaff0bb6133371d%3A0xf17f1a178844e8eb&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdaff0bb6133371d%3A0xf17f1a178844e8eb&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.580349499999997,
+            "longitude": -7.8878927999999995
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJHTczYbvwrw0R6-hEiBcaf_E",
+          "provider_id": "/g/1tqp_ly7",
+          "rating": 5,
+          "reviews": 8,
+          "type": "Event venue",
+          "types": [
+            "Event venue",
+            "Hotel",
+            "Movie studio",
+            "Portrait studio",
+            "Wedding venue"
+          ],
+          "type_id": "event_venue",
+          "type_ids": [
+            "event_venue",
+            "hotel",
+            "movie_studio",
+            "portrait_studio",
+            "wedding_venue"
+          ],
+          "address": "KM 9, Rte d'Ouarzazate, Marrakech 40000, Morocco",
+          "phone": "+212 661-170421",
+          "website": "http://www.lmansion.com/",
+          "extensions": [
+            {
+              "accessibility": [
+                "Assistive hearing loop",
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom",
+                "Wheelchair accessible seating"
+              ]
+            },
+            {
+              "payments": [
+                "Credit cards"
+              ]
+            }
+          ],
+          "user_review": "\"It was Luxury all the way, we were pampered in our Moroccan Palace.\"",
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSy4C7YzYwAYP4JbwcWW4Sqb8SiAJ-xxSBVb2n8o1vNzbi1qHMvw3fAyZVjQ782W-5D0_QWI-hm9QUm1Zbl7TUGgGvXJK3LutQlrUs-jGvC36DUOcWdAs6fPZAzR4PTqlKUm9njj=w80-h106-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/jKU0_3icBcFbcoIwFADQFV0egoDO-JHqDC1WBTFG-OlMUp4NiZgIyv5chLvpOe9XrfVVLU2T145RSVnx4q6KG5NCF0IbTHZmdVXAFCgThVbD06e79rMpG1EWuxEdGSFu2tMgbVAEj0f6caYzEUh72E-0sfvP3TA6JXrm5zbxgxmB-cb6ScgX1N0iwZ2dU-6fcFiFwyXaOt93nfAbVtCGw9rxNvjAyC9SXhnnaDq68annW9wtRNuuxsCC2rY8-AMh_wGIDkPA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 14,
+          "title": "Salle de fête Ramane",
+          "place_id": "ChIJraY3kYLxrw0RAR8fgYUlNbw",
+          "data_id": "0xdaff1829137a6ad:0xbc352585811f1f01",
+          "data_cid": "13561787108223295233",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdaff1829137a6ad%3A0xbc352585811f1f01&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdaff1829137a6ad%3A0xbc352585811f1f01&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.631229299999998,
+            "longitude": -7.915234399999999
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJraY3kYLxrw0RAR8fgYUlNbw",
+          "provider_id": "/g/11l2sznd0f",
+          "rating": 4.6,
+          "reviews": 44,
+          "type": "Function room facility",
+          "types": [
+            "Function room facility"
+          ],
+          "type_id": "function_room_facility",
+          "type_ids": [
+            "function_room_facility"
+          ],
+          "address": "40000 Alouidane, Marrakech 40000, Morocco",
+          "open_state": "Open 24 hours",
+          "hours": "Open 24 hours",
+          "operating_hours": {
+            "tuesday": "Open 24 hours",
+            "wednesday": "Open 24 hours",
+            "thursday": "Open 24 hours",
+            "friday": "Open 24 hours",
+            "saturday": "Open 24 hours",
+            "sunday": "Open 24 hours",
+            "monday": "Open 24 hours"
+          },
+          "phone": "+212 662-624366",
+          "extensions": [
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot",
+                "Wheelchair accessible restroom"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            },
+            {
+              "payments": [
+                "Credit cards",
+                "Debit cards"
+              ]
+            },
+            {
+              "children": [
+                "Good for kids birthday",
+                "Has changing table(s)"
+              ]
+            }
+          ],
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipOIrMAcD69k76FwHgl5y8XC-k5NxXEEw0ffb9A=w122-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/qlopnnicuxmbUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFng71nk65jsYmaZbW7mVu6RnmNaaRHhrJtt6lcR4epabpCWlmTpaFtuaGSkm2FppJutm5cPAGq-IBk"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 15,
+          "title": "Salle des Fêtes El Harti - Abderrahim Choutine",
+          "place_id": "ChIJXdXvVfPurw0RMLqZb3dg1hc",
+          "data_id": "0xdafeef355efd55d:0x17d660776f99ba30",
+          "data_cid": "1717666373978143280",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafeef355efd55d%3A0x17d660776f99ba30&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafeef355efd55d%3A0x17d660776f99ba30&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.6271585,
+            "longitude": -8.0080786
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJXdXvVfPurw0RMLqZb3dg1hc",
+          "provider_id": "/g/11c58h2yl5",
+          "rating": 4.6,
+          "reviews": 63,
+          "type": "Festival hall",
+          "types": [
+            "Festival hall",
+            "Conference center",
+            "Event planner",
+            "Event venue",
+            "Wedding planner",
+            "Wedding service",
+            "Wedding venue"
+          ],
+          "type_id": "festival_hall",
+          "type_ids": [
+            "festival_hall",
+            "conference_center",
+            "event_planner",
+            "event_venue",
+            "wedding_planner",
+            "wedding_service",
+            "wedding_venue"
+          ],
+          "address": "Av. Moulay El Hassan, Marrakech 40000, Morocco",
+          "open_state": "Open 24 hours",
+          "hours": "Open 24 hours",
+          "operating_hours": {
+            "tuesday": "Open 24 hours",
+            "wednesday": "Open 24 hours",
+            "thursday": "Open 24 hours",
+            "friday": "Open 24 hours",
+            "saturday": "Open 24 hours",
+            "sunday": "Open 24 hours",
+            "monday": "Open 24 hours"
+          },
+          "phone": "+212 661-149791",
+          "extensions": [
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            }
+          ],
+          "user_review": "\"Best service thank you\"",
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSwCc6YZqWnhxV-Db_-XL5SwfhcIYdjbgn3nGGsOyHszeUrIDXZ7q3ACir6ZZWOjVZgxXXzBL3J_tupcovU95F4p5a4dXnRzdOXriBzutw8JeZwA-uhbYVrROH3BPmFoqfn0ANJw=w163-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/mF7ZznicBcHbDoIgAADQLyIr0i5bD16W5Vq2Woa8tEQCy0ABo_y_PqK_6ZzflxvT6IXj1BwOmJSspp2mikhhqDADIp8OazQgGmjHj4dVfbQh8XLcngV_ZyAqLgBt3aO9cbLJy3vBBBRxrNPPWvf0pDYRwtMW-mGlPIzP6T3D7I1QH2xhcjFdQ-TrNHdXk8a9TkokDn2ZIlUFfWfsLKHY-qDjRZ6pQ7qGwf65ku1NDP1dYpd25EHA52PwAEL-AV_zRjY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 16,
+          "title": "Party Maroc",
+          "place_id": "ChIJ1_PX6Tbsrw0R5-QVf9_HgMc",
+          "data_id": "0xdafec36e9d7f3d7:0xc780c7df7f15e4e7",
+          "data_cid": "14375709773290398951",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafec36e9d7f3d7%3A0xc780c7df7f15e4e7&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafec36e9d7f3d7%3A0xc780c7df7f15e4e7&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.712003,
+            "longitude": -8.077986
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ1_PX6Tbsrw0R5-QVf9_HgMc",
+          "provider_id": "/g/11cnzj068r",
+          "rating": 4.9,
+          "reviews": 58,
+          "type": "Event management company",
+          "types": [
+            "Event management company",
+            "Event planner",
+            "Party planner",
+            "Wedding planner"
+          ],
+          "type_id": "event_management_company",
+          "type_ids": [
+            "event_management_company",
+            "event_planner",
+            "party_planner",
+            "wedding_planner"
+          ],
+          "address": "62 ,Quartier Industriel Sidi Ghanem,marrakech 40000, 40000, Morocco",
+          "open_state": "Open now",
+          "phone": "+212 651-297145",
+          "website": "http://www.partymarocmarrakech.com/",
+          "user_review": "\"The Party Maroc team made our dream destination wedding a reality!\"",
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipNak4DcdaUnzqi4o_UpdQhIYOLlW-y_Dq_bFMtS=w138-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/bgz35HicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFngl5ht4pKckhiaV1WYaZIfH1qQEpjhGenvkxOuWxnvUhif5OZbEmxbbmhsoZthaaSbrZuXDwDEWiII"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 17,
+          "title": "Salle des Fêtes les Sept Tours",
+          "place_id": "ChIJR1TJXWPurw0RWCkr-k2C_Wo",
+          "data_id": "0xdafee635dc95447:0x6afd824dfa2b2958",
+          "data_cid": "7709461408549382488",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafee635dc95447%3A0x6afd824dfa2b2958&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafee635dc95447%3A0x6afd824dfa2b2958&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.6386626,
+            "longitude": -7.997933799999999
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJR1TJXWPurw0RWCkr-k2C_Wo",
+          "provider_id": "/g/1hc6x2qm2",
+          "rating": 4,
+          "reviews": 45,
+          "unclaimed_listing": true,
+          "type": "Function room facility",
+          "types": [
+            "Function room facility",
+            "Car rental",
+            "Live music venue",
+            "Wedding bakery",
+            "Wedding planner",
+            "Wedding venue"
+          ],
+          "type_id": "function_room_facility",
+          "type_ids": [
+            "function_room_facility",
+            "car_rental",
+            "live_music_venue",
+            "wedding_bakery",
+            "wedding_planner",
+            "wedding_venue"
+          ],
+          "address": "J2Q2+FR8, N8, Marrakech 40000, Morocco",
+          "open_state": "Open · Closes 5 PM",
+          "hours": "Open · Closes 5 PM",
+          "operating_hours": {
+            "tuesday": "9 AM–5 PM",
+            "wednesday": "9 AM–5 PM",
+            "thursday": "9 AM–5 PM",
+            "friday": "9 AM–5 PM",
+            "saturday": "9 AM–5 PM",
+            "sunday": "9 AM–5 PM",
+            "monday": "9 AM–5 PM"
+          },
+          "phone": "+212 661-134250",
+          "extensions": [
+            {
+              "accessibility": [
+                "Wheelchair accessible entrance",
+                "Wheelchair accessible parking lot"
+              ]
+            },
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            },
+            {
+              "children": [
+                "Good for kids birthday"
+              ]
+            }
+          ],
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSwT2CP2D2tdljWc9uqQdfgsBqdrcxvzV6iTGSGAAtvAmZrMddN0loVy_NJoq2LWBCSwxEYxEu5Iws5JyOhmNCluONOlLTellInRXtF72tPbbmxA92IHuoBMq5_bmJ1aYVHPCic=w122-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/8eDlqnicBcHRboIwFADQL6roNWzBxIfCHEIUUAhOX4y0DNBbKrQV9Pv8if3Nzvl711rf1cKysJ5PKikrLI0qeyZbXbZ6wqSwqrsiTBFlUX_aYDpk4CXwBZrj9cAc0-34b6XcjvdsfLzyjybzU59S_aDi1G85j6Yo8-c5CmUHm4PrpcO4Oo4rYweDssNnXIvIQxNHMW6yEjFo9z_6-xN0UhRipA4EayPdbWefCxHOLsd8nXgNWw4zAFI7QG6klf8vtUXC"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 18,
+          "title": "Domaine Yakout Marrakech",
+          "place_id": "ChIJUVdOMJvxrw0Rg4nDaZSHhSQ",
+          "data_id": "0xdaff19b304e5751:0x2485879469c38983",
+          "data_cid": "2631658628767254915",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdaff19b304e5751%3A0x2485879469c38983&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdaff19b304e5751%3A0x2485879469c38983&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.5734902,
+            "longitude": -7.9568429
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJUVdOMJvxrw0Rg4nDaZSHhSQ",
+          "provider_id": "/g/11rql9425_",
+          "rating": 5,
+          "reviews": 158,
+          "type": "Event venue",
+          "types": [
+            "Event venue",
+            "Event planner",
+            "Hotel",
+            "Wedding planner",
+            "Wedding venue"
+          ],
+          "type_id": "event_venue",
+          "type_ids": [
+            "event_venue",
+            "event_planner",
+            "hotel",
+            "wedding_planner",
+            "wedding_venue"
+          ],
+          "address": "H2FV+J98, Km3 Route de l'Ourika 40000, Marrakech, Morocco",
+          "phone": "+212 665-185577",
+          "website": "https://www.domaineyakout.com/",
+          "amenities": [
+            "Free Wi-Fi"
+          ],
+          "user_review": "\"Lovely setting and fantastic service from all the team!\"",
+          "thumbnail": "https://lh3.googleusercontent.com/p/AF1QipNEdcogiMdbwab7DmSfEYnNu8BE7KyOn9IklSfW=w137-h92-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/YvdaNnicuxmXUVJSUGylr5-TYayXnp-fnpNaWpxalJyfV5KaV6KXnJ-rX6Dv6GYYmFng55qSnJ-e6ZuSVJ6YZO6SG5zmGpnnV2rh5GruXemfZ-mZnROcFm5bbmhsrpthaaSbrZuXDwC7yCGz"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 19,
+          "title": "P L Place Marrakech - Boutique Hôtel - Restaurant - Pool - Event",
+          "place_id": "ChIJ7SCR28_xrw0Ri_JGQfhP0ZA",
+          "data_id": "0xdaff1cfdb9120ed:0x90d14ff84146f28b",
+          "data_cid": "10435209739259802251",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdaff1cfdb9120ed%3A0x90d14ff84146f28b&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdaff1cfdb9120ed%3A0x90d14ff84146f28b&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.652783099999997,
+            "longitude": -7.9412562
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ7SCR28_xrw0Ri_JGQfhP0ZA",
+          "provider_id": "/g/11v4hwlg83",
+          "rating": 5,
+          "reviews": 57,
+          "price": "$163",
+          "type": "Event venue",
+          "types": [
+            "Event venue",
+            "Hotel",
+            "Spa",
+            "Wedding planner",
+            "Wellness hotel"
+          ],
+          "type_id": "event_venue",
+          "type_ids": [
+            "event_venue",
+            "hotel",
+            "spa",
+            "wedding_planner",
+            "wellness_hotel"
+          ],
+          "address": "Charouf, Marrakech 40000, Morocco",
+          "phone": "+212 666-485929",
+          "website": "http://www.plplace-marrakech.com/",
+          "user_review": "\"The service was amazing and the rooms are just an adventure\"",
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSxkYJA5sckYZLJTb3a487m-jzAN0ut2TrVYawNIP6i_7qOjyEvoUBKH4boVbK56MSmIwiTy9WSdZ7JR33gKP0aEbfjbFeq3cNhSAkAly533IKcT1-EZijGTNT81q6Ek0cuuGpkrBFP1T1g=w80-h106-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/OO5aJHicBcFdToMwAADgE3W0dvxo4kOXMAYoklEx8GJoZQUKFGgR8YxeYLfx--5_jTGTfrKsvsEHoZTo61XXC1ejqUdz4GqwxKQB10BbJIBtn_3IIiK25rIoXyLKcHX03AF0vySBq3mgS15UWxKmTvvpzm_d7n-r91N8OTKVs9h2XrMh3Fq6P35kX6UbXTEWcQorn906dq5nzJMmI5L0u41xGHOKgF-2XUAT6qHZ8SXk6xpMcjmdU0SReN48CBoEHSDBqP4BetVFjA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "position": 20,
+          "title": "La Siredrah Marrakech",
+          "place_id": "ChIJY52bZDXvrw0RpvYbIPo5AAg",
+          "data_id": "0xdafef35649b9d63:0x80039fa201bf6a6",
+          "data_cid": "576524498746734246",
+          "reviews_link": "https://serpapi.com/search.json?data_id=0xdafef35649b9d63%3A0x80039fa201bf6a6&engine=google_maps_reviews&hl=en",
+          "photos_link": "https://serpapi.com/search.json?data_id=0xdafef35649b9d63%3A0x80039fa201bf6a6&engine=google_maps_photos&hl=en",
+          "gps_coordinates": {
+            "latitude": 31.6377939,
+            "longitude": -8.009395399999999
+          },
+          "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJY52bZDXvrw0RpvYbIPo5AAg",
+          "provider_id": "/g/11x0q7ly95",
+          "rating": 5,
+          "reviews": 7,
+          "type": "Event venue",
+          "types": [
+            "Event venue",
+            "Guest house",
+            "Hotel",
+            "Wedding venue"
+          ],
+          "type_id": "event_venue",
+          "type_ids": [
+            "event_venue",
+            "guest_house",
+            "hotel",
+            "wedding_venue"
+          ],
+          "address": "Bureau N°6, 2 Ème Étage Résidence « Ahlam B » Avenue Yaacoub El Mansour, Marrakech 40000, Morocco",
+          "phone": "+212 661-798842",
+          "website": "https://lasiredrah.com/",
+          "extensions": [
+            {
+              "amenities": [
+                "Restroom"
+              ]
+            }
+          ],
+          "thumbnail": "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSyz0cfQLiuWHQEhlvqGSt65KajvRfam51VeMGcJxgu65rozYk1RWdtaH0ocnPijjZa4zlsKZVVsu49Fl3Mya-g6UD8jB9US0umHi9JUnjfMBOF5a3uF6zGlUw4EclubdDs8LmCqxlEFMkrI=w80-h119-k-no",
+          "serpapi_thumbnail": "https://serpapi.com/images/url/gest03icBcFbcoIwFADQFUXC8Bhwph9VeYgyrTLA1L80QCBcEiWJD_bYBXQ3nvP_12t9VWvLgt5ZMSkZtEa1M5VCt0KvqJwsdlWIKqSszwQPULwWTLvTcTB1eop6uN-SQvvegfD7uSOTZ1dtntDsyYzvzXL5Ge1z3WiSYknF98D5hbgLqMOlqpRxwxic_EUQ88tdwDdhWWAzpUOYlYJ3-eYr9ohjYn9JoHy4EQXz2-xUcJy2tydEcT7O-49HgFFv2yEakZBvnDBIcQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "SerpAPI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "afe42272-b4ad-4a5d-a65f-f803fc5862b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6fba02c56f732391825a81b0d3eb33212632413b406e8a0f3fe5b1cfa7369a99"
+  },
+  "id": "svkIrbqfU014RwOr",
+  "tags": []
+}
