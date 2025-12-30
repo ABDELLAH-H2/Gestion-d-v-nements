@@ -30,10 +30,24 @@ const triggerScraping = async (req, res) => {
         });
 
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('n8n webhook error response:', errorText);
             throw new Error(`n8n webhook responded with status ${response.status}`);
         }
 
-        const result = await response.json();
+        // Handle n8n response - it might not always be JSON
+        let result = {};
+        const responseText = await response.text();
+
+        if (responseText) {
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                // n8n returned non-JSON response (e.g., plain text "success")
+                console.log('n8n response (non-JSON):', responseText);
+                result = { message: responseText };
+            }
+        }
 
         // Log the scraping trigger
         await pool.query(
@@ -50,10 +64,10 @@ const triggerScraping = async (req, res) => {
         });
     } catch (error) {
         console.error('Trigger scraping error:', error);
-        
+
         // Return n8n error message if available
-        const message = error.message.includes('n8n') 
-            ? error.message 
+        const message = error.message.includes('n8n')
+            ? error.message
             : 'Failed to trigger scraping workflow. Please check the system logs.';
 
         res.status(500).json({
@@ -97,7 +111,7 @@ const getScrapedVenues = async (req, res) => {
             `SELECT * FROM scraped_venues 
              ${whereClause}
              ORDER BY scraped_at DESC
-             LIMIT $${paramIndex} OFFSET $${paramIndex+1}`,
+             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
             [...params, parseInt(limit), offset]
         );
 
