@@ -25,6 +25,11 @@ const updateSidebarUser = () => {
     const user = getUser();
     const sidebarUser = document.getElementById('sidebarUser');
 
+    // Check if element exists before manipulating
+    if (!sidebarUser) {
+        return; // Element doesn't exist in this page layout
+    }
+
     if (user) {
         sidebarUser.innerHTML = `
             <div style="width: 32px; height: 32px; border-radius: 50%; background-size: cover; background-position: center; border: 2px solid rgba(255,255,255,0.1);"
@@ -95,7 +100,7 @@ const triggerScraping = async () => {
             // Open Google Sheet if URL provided
             if (response.sheetUrl) {
                 showToast('Scraping complete! Click the button below to view results.', 'success');
-                
+
                 // Change button to "View Results"
                 triggerBtn.disabled = false;
                 triggerBtn.className = 'btn btn-success'; // Ensure you have a success class or use inline style
@@ -107,7 +112,7 @@ const triggerScraping = async () => {
                     </span>
                 `;
                 triggerBtn.onclick = () => window.open(response.sheetUrl, '_blank');
-                
+
                 // Reset button after 10 seconds
                 setTimeout(() => {
                     triggerBtn.className = 'btn btn-primary';
@@ -120,7 +125,7 @@ const triggerScraping = async () => {
                     `;
                     triggerBtn.onclick = triggerScraping;
                 }, 10000);
-                
+
                 return; // Stop here so we don't reset the button immediately in 'finally'
             }
         }
