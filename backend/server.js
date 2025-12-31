@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const favoriteRoutes = require('./routes/favorites');
 const scrapingRoutes = require('./routes/scraping');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -61,6 +62,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/scraping', scrapingRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

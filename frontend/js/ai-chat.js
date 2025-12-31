@@ -1,9 +1,7 @@
 // AI Chat Module - OpenRouter API Integration
-// Uses google/gemma-3-27b-it:free model
+// Uses backend proxy to protect API keys
 
-const OPENROUTER_API_KEY = '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';
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const AI_MODEL = 'google/gemma-3-27b-it:free';
+const API_URL = '/api/ai/chat';
 
 // System prompt to train the AI about your website
 const SYSTEM_PROMPT = `You are a helpful AI assistant for "Gestion d'Événements", an event discovery and management platform.
@@ -206,7 +204,7 @@ const addMessage = (content, sender) => {
     }
 };
 
-// Send message to OpenRouter API
+// Send message to Backend API Proxy
 const sendMessage = async (message) => {
     const messages = [
         { role: 'system', content: SYSTEM_PROMPT },
@@ -214,19 +212,13 @@ const sendMessage = async (message) => {
         { role: 'user', content: message }
     ];
 
-    const response = await fetch(OPENROUTER_API_URL, {
+    const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-            'HTTP-Referer': window.location.origin,
-            'X-Title': 'Gestion d\'Événements',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: AI_MODEL,
-            messages: messages,
-            max_tokens: 500,
-            temperature: 0.7
+            messages: messages
         })
     });
 
