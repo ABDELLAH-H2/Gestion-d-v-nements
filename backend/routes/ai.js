@@ -39,6 +39,8 @@ router.post('/chat', async (req, res) => {
         }
 
         // 4. Call n8n AI Agent Webhook
+        console.log(`📡 Calling n8n: ${n8nUrl}`);
+
         const n8nResponse = await fetch(n8nUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -49,13 +51,34 @@ router.post('/chat', async (req, res) => {
             })
         });
 
+        // Get raw response text first
+        const responseText = await n8nResponse.text();
+        console.log(`📥 n8n raw response:`, responseText.substring(0, 500));
+
         if (!n8nResponse.ok) {
-            const errorText = await n8nResponse.text();
-            console.error('n8n Error:', n8nResponse.status, errorText);
-            throw new Error(`n8n Error: ${n8nResponse.statusText}`);
+            console.error('n8n Error:', n8nResponse.status, responseText);
+            throw new Error(`n8n Error: ${n8nResponse.status} - ${responseText}`);
         }
 
-        const data = await n8nResponse.json();
+        // Check for empty response
+        if (!responseText || responseText.trim() === '') {
+            console.error('n8n returned empty response');
+            throw new Error('n8n returned empty response. Make sure the workflow is active.');
+        }
+
+        // Parse JSON safely
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('Failed to parse n8n response:', parseError);
+            // If response is plain text, use it directly
+            if (responseText && responseText.length > 0) {
+                data = { output: responseText };
+            } else {
+                throw new Error('Invalid response from n8n workflow');
+            }
+        }
 
         // 5. Extract the answer from n8n response
         // n8n usually returns: [{ "output": "The answer..." }] or { "output": "..." }
@@ -69,6 +92,9 @@ router.post('/chat', async (req, res) => {
             aiText = data.text;
         } else if (typeof data === 'string') {
             aiText = data;
+        } else if (Array.isArray(data) && data.length > 0) {
+            // Try to extract any text from the first item
+            aiText = JSON.stringify(data[0]);
         }
 
         console.log(`✅ AI Response: ${aiText.substring(0, 100)}...`);
