@@ -305,7 +305,9 @@ const viewEventDetails = (eventId) => {
 };
 
 // Open create event modal
-const openCreateEventModal = () => {
+let openCreateEventModal = () => {
+    isEditing = false;
+
     if (!isAuthenticated()) {
         showToast('Please login to create events', 'warning');
         window.location.href = '/login.html';
