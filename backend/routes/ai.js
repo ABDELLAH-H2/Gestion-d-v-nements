@@ -1,9 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios'); // Assuming axios is available or we use fetch (node 18+)
-// Using native fetch for Node 18+ or standard https module if preferred, but let's stick to simple fetch if available or dynamic import
-// Since this is a standard express app, let's use global fetch (Node 18+) or install axios if needed. 
-// Given the constraints, I'll use standard fetch which is available in Node.js 18+ (verified in package.json engines usually, but safe to assume modern node).
 
 router.post('/chat', async (req, res) => {
     try {
