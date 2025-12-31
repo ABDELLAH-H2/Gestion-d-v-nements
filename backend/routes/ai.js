@@ -1,42 +1,91 @@
+// AI Chat Route - n8n Agent Integration
+// Calls n8n AI Agent workflow instead of OpenRouter directly
 const express = require('express');
 const router = express.Router();
 
+// POST /api/ai/chat - Proxy chat requests to n8n AI Agent
 router.post('/chat', async (req, res) => {
     try {
-        const { messages } = req.body;
+        const { messages, user, sessionId: clientSessionId } = req.body;
 
         if (!messages || !Array.isArray(messages)) {
             return res.status(400).json({ error: 'Messages array is required' });
         }
 
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        // 1. Get the last message from the user
+        const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
+
+        if (!lastUserMessage) {
+            return res.status(400).json({ error: 'No user message found' });
+        }
+
+        // 2. Create a Session ID for memory persistence
+        // If user is logged in, use their ID. If not, use the guest session ID from frontend.
+        const sessionId = user?.id
+            ? `user_${user.id}`
+            : (clientSessionId || 'anonymous_guest');
+
+        console.log(`🤖 AI Agent | Session: ${sessionId} | Query: ${lastUserMessage.content}`);
+
+        // 3. Check if n8n webhook URL is configured
+        const n8nUrl = process.env.N8N_AI_AGENT_URL;
+
+        if (!n8nUrl) {
+            console.error('N8N_AI_AGENT_URL is not configured');
+            return res.status(500).json({
+                error: 'AI Agent not configured',
+                message: 'Please set N8N_AI_AGENT_URL environment variable'
+            });
+        }
+
+        // 4. Call n8n AI Agent Webhook
+        const n8nResponse = await fetch(n8nUrl, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:3000',
-                'X-Title': 'Gestion d\'Événements', // Corrected escaping for apostrophe
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'google/gemma-3-27b-it:free',
-                messages: messages,
-                max_tokens: 500,
-                temperature: 0.7
+                query: lastUserMessage.content,
+                sessionId: sessionId,
+                history: messages // Send full history if n8n needs it
             })
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('OpenRouter API Error:', response.status, errorText);
-            return res.status(response.status).json({ error: 'AI Provider Error' });
+        if (!n8nResponse.ok) {
+            const errorText = await n8nResponse.text();
+            console.error('n8n Error:', n8nResponse.status, errorText);
+            throw new Error(`n8n Error: ${n8nResponse.statusText}`);
         }
 
-        const data = await response.json();
-        res.json(data);
+        const data = await n8nResponse.json();
+
+        // 5. Extract the answer from n8n response
+        // n8n usually returns: [{ "output": "The answer..." }] or { "output": "..." }
+        let aiText = "I'm having trouble connecting to my brain right now. Please try again.";
+
+        if (Array.isArray(data) && data[0]?.output) {
+            aiText = data[0].output;
+        } else if (data.output) {
+            aiText = data.output;
+        } else if (data.text) {
+            aiText = data.text;
+        } else if (typeof data === 'string') {
+            aiText = data;
+        }
+
+        console.log(`✅ AI Response: ${aiText.substring(0, 100)}...`);
+
+        // Return in the same format as before for frontend compatibility
+        res.json({
+            success: true,
+            choices: [{ message: { content: aiText } }]
+        });
 
     } catch (error) {
-        console.error('AI Proxy Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('❌ AI Controller Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to process AI request',
+            message: error.message
+        });
     }
 });
 

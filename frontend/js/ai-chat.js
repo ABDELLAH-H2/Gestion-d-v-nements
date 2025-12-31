@@ -204,7 +204,7 @@ const addMessage = (content, sender) => {
     }
 };
 
-// Send message to Backend API Proxy
+// Send message to Backend API Proxy (n8n AI Agent)
 const sendMessage = async (message) => {
     const messages = [
         { role: 'system', content: SYSTEM_PROMPT },
@@ -212,13 +212,26 @@ const sendMessage = async (message) => {
         { role: 'user', content: message }
     ];
 
+    // Get user from the global state (set by api.js)
+    const user = window.getUser ? window.getUser() : null;
+
+    // Generate or retrieve a guest session ID for non-logged-in users
+    let guestSessionId = localStorage.getItem('guest_session_id');
+    if (!guestSessionId) {
+        guestSessionId = 'guest_' + Math.random().toString(36).substring(2, 11);
+        localStorage.setItem('guest_session_id', guestSessionId);
+    }
+
     const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
+        credentials: 'include', // Include cookies for auth
         body: JSON.stringify({
-            messages: messages
+            messages: messages,
+            user: user,                           // Send user info for memory
+            sessionId: user ? null : guestSessionId  // Fallback session for guests
         })
     });
 
