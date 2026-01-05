@@ -41,15 +41,26 @@ router.post('/chat', async (req, res) => {
         // 4. Call n8n AI Agent Webhook
         console.log(`📡 Calling n8n: ${n8nUrl}`);
 
+        // Create AbortController for timeout (60 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
         const n8nResponse = await fetch(n8nUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'User-Agent': 'Gestion-Evenements-Backend/1.0'
+            },
             body: JSON.stringify({
                 query: lastUserMessage.content,
                 sessionId: sessionId,
                 history: messages // Send full history if n8n needs it
-            })
+            }),
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         // Get raw response text first
         const responseText = await n8nResponse.text();
