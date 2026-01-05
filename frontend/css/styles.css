@@ -2007,6 +2007,25 @@ a:hover {
     font-size: 18px;
 }
 
+/* Custom AI Avatar Image */
+.ai-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.ai-chat-button .ai-avatar-img {
+    width: 40px;
+    height: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.ai-chat-button.active .ai-avatar-img {
+    transform: rotate(-90deg);
+}
+
 .ai-header-text h4 {
     margin: 0;
     font-size: var(--font-size-base);

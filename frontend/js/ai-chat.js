@@ -41,7 +41,7 @@ const createChatUI = () => {
     chatButton.id = 'aiChatButton';
     chatButton.className = 'ai-chat-button';
     chatButton.innerHTML = `
-        <span class="material-symbols-outlined">smart_toy</span>
+        <img src="/ai-avatar.png" alt="AI" class="ai-avatar-img">
         <span class="chat-button-pulse"></span>
     `;
     document.body.appendChild(chatButton);
@@ -55,7 +55,7 @@ const createChatUI = () => {
             <div class="ai-chat-header">
                 <div class="ai-chat-header-info">
                     <div class="ai-avatar">
-                        <span class="material-symbols-outlined">smart_toy</span>
+                        <img src="/ai-avatar.png" alt="AI" class="ai-avatar-img">
                     </div>
                     <div class="ai-header-text">
                         <h4>AI Assistant</h4>
@@ -69,7 +69,7 @@ const createChatUI = () => {
             <div class="ai-chat-messages" id="aiChatMessages">
                 <div class="ai-welcome-message">
                     <div class="ai-avatar small">
-                        <span class="material-symbols-outlined">smart_toy</span>
+                        <img src="/ai-avatar.png" alt="AI" class="ai-avatar-img">
                     </div>
                     <div class="ai-message">
                         <p>👋 Hello! I'm your AI assistant for Gestion d'Événements.</p>
@@ -175,7 +175,7 @@ const addMessage = (content, sender) => {
     if (sender === 'ai') {
         messageDiv.innerHTML = `
             <div class="ai-avatar small">
-                <span class="material-symbols-outlined">smart_toy</span>
+                <img src="/ai-avatar.png" alt="AI" class="ai-avatar-img">
             </div>
             <div class="ai-message">
                 <p>${formatMessage(content)}</p>
