@@ -3,6 +3,44 @@
 const express = require('express');
 const router = express.Router();
 
+// Helper function to clean up duplicate/concatenated AI responses
+// n8n with memory can return multiple responses concatenated together
+const cleanAIResponse = (text) => {
+    if (!text || typeof text !== 'string') return text;
+
+    // Common duplicate patterns from n8n memory/tool concatenation
+    const duplicatePatterns = [
+        /I couldn't find any (?:events|venues) matching that criteria\.\s*😔\s*/gi,
+        /I'm just a program, so I don't have feelings, but I'm here and ready to help you find events!\s*😊\s*/gi,
+    ];
+
+    // Count occurrences and keep only the last meaningful content
+    let cleaned = text;
+
+    // Remove duplicate error messages (keep only one if present at the end)
+    duplicatePatterns.forEach(pattern => {
+        const matches = cleaned.match(pattern);
+        if (matches && matches.length > 1) {
+            // Remove all but one occurrence
+            for (let i = 0; i < matches.length - 1; i++) {
+                cleaned = cleaned.replace(pattern, '');
+            }
+        }
+    });
+
+    // Remove the generic "I couldn't find" if there's actual content after it
+    const hasEventContent = /\*\*.*?\*\*|📅|📍|💰|🎭|🎵|Event|Conference|Workshop|Concert/i.test(cleaned);
+    if (hasEventContent) {
+        cleaned = cleaned.replace(/I couldn't find any (?:events|venues) matching that criteria\.\s*😔\s*/gi, '');
+        cleaned = cleaned.replace(/I'm just a program, so I don't have feelings, but I'm here and ready to help you find events!\s*😊\s*/gi, '');
+    }
+
+    // Clean up excessive newlines
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+
+    return cleaned;
+};
+
 // POST /api/ai/chat - Proxy chat requests to n8n AI Agent
 router.post('/chat', async (req, res) => {
     try {
@@ -107,6 +145,9 @@ router.post('/chat', async (req, res) => {
             // Try to extract any text from the first item
             aiText = JSON.stringify(data[0]);
         }
+
+        // 6. Clean up duplicate/concatenated responses from n8n memory
+        aiText = cleanAIResponse(aiText);
 
         console.log(`✅ AI Response: ${aiText.substring(0, 100)}...`);
 
