@@ -95,13 +95,27 @@
         });
     </script>
 
-    <!-- Fonts -->
+    <!-- Preconnect to critical origins (saves ~460ms for PostHog) -->
+    <link rel="preconnect" href="https://us.i.posthog.com" crossorigin>
+    <link rel="dns-prefetch" href="https://us.i.posthog.com">
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+
+    <!-- Fonts with display=swap for faster text rendering -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet">
+    </noscript>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet">
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet">
+    </noscript>
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
@@ -320,10 +334,10 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/api.js"></script>
-    <script src="js/events.js"></script>
-    <script src="js/ai-chat.js"></script>
+    <!-- Scripts (deferred to avoid blocking render) -->
+    <script src="js/api.js" defer></script>
+    <script src="js/events.js" defer></script>
+    <script src="js/ai-chat.js" defer></script>
 </body>
 
 </html>

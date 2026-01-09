@@ -60,13 +60,18 @@
         });
     </script>
 
-    <!-- Fonts -->
+    <!-- Preconnect to critical origins -->
+    <link rel="preconnect" href="https://us.i.posthog.com" crossorigin>
+    <link rel="dns-prefetch" href="https://us.i.posthog.com">
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+
+    <!-- Fonts with display=swap for faster text rendering -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"
+        media="print" onload="this.media='all'">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet">
+        rel="stylesheet" media="print" onload="this.media='all'">
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
