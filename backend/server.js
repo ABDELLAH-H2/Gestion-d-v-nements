@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 const { testConnection } = require('./config/database');
 
 // Import routes
@@ -17,6 +18,27 @@ const PORT = process.env.PORT || 3000;
 
 // Trust proxy - needed for secure cookies behind reverse proxies (Vercel, Render, etc.)
 app.set('trust proxy', 1);
+
+// Security: Rate limiting to prevent brute force attacks
+const authRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Max 10 login/register attempts per 15 minutes
+    message: {
+        success: false,
+        message: 'Too many authentication attempts. Please try again after 15 minutes.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+const apiRateLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 100, // Max 100 requests per minute
+    message: {
+        success: false,
+        message: 'Too many requests. Please slow down.'
+    }
+});
 
 // Middleware
 app.use(cookieParser());
@@ -50,12 +72,20 @@ app.use(cors({
     },
     credentials: true
 }));
-// Increase body size limit to 50MB for base64 image uploads
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Security: Reduced body size limit (use separate file upload handling for images)
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Serve static files from frontend folder (for production)
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Apply rate limiting to auth routes (prevents brute force)
+app.use('/api/auth/login', authRateLimiter);
+app.use('/api/auth/register', authRateLimiter);
+
+// Apply general rate limiting to all API routes
+app.use('/api', apiRateLimiter);
 
 // API Routes
 app.use('/api/auth', authRoutes);

@@ -170,13 +170,29 @@ const showToast = (message, type = 'success', duration = 4000) => {
         warning: 'warning'
     };
 
-    toast.innerHTML = `
-        <span class="material-symbols-outlined toast-icon">${icons[type] || 'info'}</span>
-        <span class="toast-message">${message}</span>
-        <button class="toast-close" onclick="this.parentElement.remove()">
-            <span class="material-symbols-outlined">close</span>
-        </button>
-    `;
+    // Create icon element safely
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'material-symbols-outlined toast-icon';
+    iconSpan.textContent = icons[type] || 'info';
+
+    // Create message element safely (prevents XSS)
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'toast-message';
+    messageSpan.textContent = message; // Safe: uses textContent, not innerHTML
+
+    // Create close button safely
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.addEventListener('click', () => toast.remove());
+    const closeIcon = document.createElement('span');
+    closeIcon.className = 'material-symbols-outlined';
+    closeIcon.textContent = 'close';
+    closeBtn.appendChild(closeIcon);
+
+    // Append all elements
+    toast.appendChild(iconSpan);
+    toast.appendChild(messageSpan);
+    toast.appendChild(closeBtn);
 
     toastContainer.appendChild(toast);
 
@@ -231,6 +247,14 @@ const debounce = (func, wait) => {
     };
 };
 
+// Escape HTML to prevent XSS (Security: sanitizes user input before inserting into HTML)
+const escapeHtml = (str) => {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+};
+
 // Update navigation based on auth state
 const updateNavigation = () => {
     const user = getUser();
@@ -238,18 +262,23 @@ const updateNavigation = () => {
 
     userMenus.forEach(menu => {
         if (user) {
+            // Sanitize user data to prevent XSS
+            const safeUsername = escapeHtml(user.username);
+            const safeEmail = escapeHtml(user.email || '');
+            const avatarUrl = user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=6366F1&color=fff';
+
             menu.innerHTML = `
                 <div class="user-avatar" 
-                     style="background-image: url('${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=6366F1&color=fff'}')"
-                     title="${user.username}"
+                     style="background-image: url('${avatarUrl}')"
+                     title="${safeUsername}"
                      onclick="toggleUserDropdown()">
                 </div>
                 <div class="user-dropdown hidden" id="userDropdown">
                     <div class="dropdown-user-info">
-                        <div class="dropdown-avatar" style="background-image: url('${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&background=6366F1&color=fff'}')"></div>
+                        <div class="dropdown-avatar" style="background-image: url('${avatarUrl}')"></div>
                         <div class="dropdown-user-details">
-                            <span class="dropdown-username">${user.username}</span>
-                            <span class="dropdown-email">${user.email || ''}</span>
+                            <span class="dropdown-username">${safeUsername}</span>
+                            <span class="dropdown-email">${safeEmail}</span>
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
