@@ -14,6 +14,13 @@
     <meta name="keywords"
         content="events, gestion d'événements, event management, conferences, concerts, workshops, meetups, Marrakech, Morocco">
     <meta name="theme-color" content="#6366F1">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <link rel="canonical" href="https://gestion-evenements.vercel.app/">
 
     <!-- Open Graph / Facebook -->
@@ -338,6 +345,17 @@
     <script src="js/api.js" defer></script>
     <script src="js/events.js" defer></script>
     <script src="js/ai-chat.js" defer></script>
+
+    <!-- Register Service Worker for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
 </body>
 
 </html>
