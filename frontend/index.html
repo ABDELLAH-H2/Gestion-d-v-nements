@@ -8,6 +8,93 @@
     <meta name="description"
         content="Discover and manage events with Gestion d'Événements. Find conferences, concerts, workshops, and meetups near you.">
 
+    <!-- SEO Meta Tags -->
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Gestion d'Événements">
+    <meta name="keywords"
+        content="events, gestion d'événements, event management, conferences, concerts, workshops, meetups, Marrakech, Morocco">
+    <meta name="theme-color" content="#6366F1">
+    <link rel="canonical" href="https://gestion-evenements.vercel.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gestion-evenements.vercel.app/">
+    <meta property="og:title" content="Gestion d'Événements - Discover Amazing Events">
+    <meta property="og:description"
+        content="Discover and manage events with Gestion d'Événements. Find conferences, concerts, workshops, and meetups near you.">
+    <meta property="og:image" content="https://gestion-evenements.vercel.app/og-image.png">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="Gestion d'Événements">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://gestion-evenements.vercel.app/">
+    <meta name="twitter:title" content="Gestion d'Événements - Discover Amazing Events">
+    <meta name="twitter:description"
+        content="Discover and manage events with Gestion d'Événements. Find conferences, concerts, workshops, and meetups near you.">
+    <meta name="twitter:image" content="https://gestion-evenements.vercel.app/og-image.png">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#6366F1',
+                            hover: '#5457E5',
+                            light: 'rgba(99, 102, 241, 0.1)',
+                            glow: 'rgba(99, 102, 241, 0.25)',
+                        },
+                        secondary: {
+                            DEFAULT: '#22D3EE',
+                            hover: '#0FC9E7',
+                            light: 'rgba(34, 211, 238, 0.1)',
+                        },
+                        surface: {
+                            dark: '#1E1E1E',
+                            light: '#2A2A2A',
+                            hover: '#333333',
+                        },
+                        border: {
+                            dark: '#2A2A2A',
+                            light: '#333333',
+                        },
+                        background: {
+                            dark: '#121212',
+                        },
+                        success: '#22C55E',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'xl': '0.75rem',
+                        '2xl': '1rem',
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- PostHog Analytics -->
+    <script>
+        !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.crossOrigin = "anonymous", p.async = !0, p.src = s.api_host.replace(/\/$/, '') + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "init identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys capture captureException".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
+
+        // Initialize PostHog - Replace 'YOUR_POSTHOG_API_KEY' with your actual PostHog project API key
+        // Get your API key from: https://app.posthog.com/project/settings
+        posthog.init('YOUR_POSTHOG_API_KEY', {
+            api_host: 'https://us.i.posthog.com', // Use 'https://eu.i.posthog.com' for EU cloud
+            person_profiles: 'identified_only',
+            capture_pageview: true,
+            capture_pageleave: true,
+            autocapture: true
+        });
+    </script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
