@@ -66,8 +66,12 @@ const loadEvents = async () => {
     const emptyState = document.getElementById('emptyState');
     const paginationContainer = document.getElementById('paginationContainer');
 
-    eventsGrid.innerHTML = '';
-    loadingState.classList.remove('hidden');
+    // Only clear grid and show spinner if we don't have skeleton cards (initial load)
+    if (!eventsGrid.querySelector('.skeleton-card')) {
+        eventsGrid.innerHTML = '';
+        loadingState.classList.remove('hidden');
+    }
+
     emptyState.classList.add('hidden');
     paginationContainer.innerHTML = '';
 

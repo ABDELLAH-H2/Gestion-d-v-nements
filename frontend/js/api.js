@@ -350,3 +350,4 @@ window.formatDate = formatDate;
 window.formatDateRange = formatDateRange;
 window.formatPrice = formatPrice;
 window.debounce = debounce;
+window.escapeHtml = escapeHtml;

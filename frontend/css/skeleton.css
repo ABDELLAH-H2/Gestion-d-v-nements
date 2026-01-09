@@ -1,0 +1,41 @@
+/* Skeleton Loading */
+.skeleton {
+    background: linear-gradient(90deg, var(--surface-light) 25%, var(--surface-hover) 50%, var(--surface-light) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+    height: 1rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.skeleton-text.w-75 {
+    width: 75%;
+}
+
+.skeleton-text.w-50 {
+    width: 50%;
+}
+
+.skeleton-text.w-25 {
+    width: 25%;
+}
+
+.skeleton-card-image {
+    aspect-ratio: 16/9;
+    width: 100%;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

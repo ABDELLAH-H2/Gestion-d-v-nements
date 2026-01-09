@@ -261,11 +261,7 @@ const formatMessage = (text) => {
 };
 
 // Escape HTML to prevent XSS
-const escapeHtml = (text) => {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-};
+// Escape HTML to prevent XSS - Uses global window.escapeHtml from api.js
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', initAIChat);
