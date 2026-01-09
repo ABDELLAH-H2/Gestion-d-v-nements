@@ -36,24 +36,8 @@
     <meta name="twitter:description" content="View event details on Gestion d'Événements.">
     <meta name="twitter:image" content="https://gestion-evenements.vercel.app/og-image.png">
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: { DEFAULT: '#6366F1', hover: '#5457E5', light: 'rgba(99, 102, 241, 0.1)' },
-                        secondary: { DEFAULT: '#22D3EE', hover: '#0FC9E7' },
-                        surface: { dark: '#1E1E1E', light: '#2A2A2A', hover: '#333333' },
-                        border: { dark: '#2A2A2A', light: '#333333' },
-                        background: { dark: '#121212' },
-                    },
-                    fontFamily: { sans: ['Manrope', 'sans-serif'] },
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind CSS (Purged & Minified) -->
+    <link rel="stylesheet" href="css/tailwind.css">
 
     <!-- PostHog Analytics -->
     <script>
@@ -79,8 +63,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" media="print" onload="this.media='all'">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Critical CSS -->
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --surface: #1E1E1E;
+            --text: #FFFFFF
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text);
+            font-family: Manrope, sans-serif;
+            min-height: 100vh
+        }
+    </style>
+
+    <!-- Main Styles (async) -->
+    <link rel="preload" href="css/styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="css/styles.css">
+    </noscript>
     <style>
         /* Event Detail Page Specific Styles */
         .hero-image {
